@@ -23,7 +23,7 @@ $ make install
 
 $ kismet
 
-- got to kismets webserver at localhost:2501
+- go to kismets webserver at localhost:2501
 
 - at the bottom next to "Messages" and "Channels" should be the Atak Companion Tab
 
