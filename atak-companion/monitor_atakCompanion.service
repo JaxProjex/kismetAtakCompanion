@@ -1,0 +1,11 @@
+[Unit]
+Description=monitor kismet with atakCompanionScript
+After=network.target
+
+[Service]
+Environment=HOME=%h
+ExecStart=python %h/.kismet/plugins/atakCompanion/atakCompanionScript.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

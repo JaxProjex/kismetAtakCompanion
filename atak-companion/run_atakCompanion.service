@@ -1,0 +1,11 @@
+[Unit]
+Description=Boots Atak Companion API
+After=network.target
+
+[Service]
+Environment=HOME=%h
+ExecStart=python %h/.kismet/plugins/atakCompanion/atakCompanionServer.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
