@@ -271,7 +271,7 @@ button {
 <div id="targetDrop" class="dropdown-container">
 <span style="padding:10px"><label for="target-enable">Enable:</label><label class="enableSwitch"><input id="target-enable" type="checkbox"><span class="slider"></span></label></span>
 <br><br><span style="padding:10px"><label for="target-add">Add Target:</label><input id="target-add" type="text" placeholder="XX:XX:XX:XX:XX:XX" disabled="true">
-<button type="button" id="target-add-button" disabled="true">Add</button></span>
+<button type="button" id="target-add-button" disabled="true">Add</button> *case sensitive</span>
 <br><br><span style="padding:10px"><label for="file-target">Upload Targets:</label><input type="file" id="file-target" name="filename-target" accept=".txt" disabled=true></span>
 <br><br><span style="padding:10px"><label for="target-list">Select:</label><select name="target-list" id="target-list" disabled="true"></select>
 <button type="button" id="target-delete-button" disabled="true">Remove</button>
@@ -317,6 +317,14 @@ Etherneting the RPi to ATAK directly. Bluetooth has the potential to be an optio
  TAKX has also not been tested.</li>
 </ul>
 
+<h3><u>TAK Forwarder</u></h3>
+<ul>
+<li>TAK-FWD button will send CoT marker on your messaging protocol configured (multicast/TAKServer) along with the CoT marker and color you configured in the Alerts Config</li>
+<li>When TAK-FWD button clicked it will either return "SENT!" or "NO-GPS!". If "NO-GPS!", this isnt because you dont have a valid GPS location data being pulled but because the device selected doesnt have GPS location attached to it in the device details. This is often an issue only with WiFi-Clients and WiFi-Bridge</li>
+<li>MUST enable and configure TAKServer Config or Multicast Config AND enable and configure Alerts Config for TAK Forwarder to work</li>
+<li></li>
+</ul>
+
 <h3><u>Initialize</u></h3>
 <ul>
 <li>If "Initialize:" isnt greyed out and bordered green, there was an issue fetching kismets login credentials from kismet_httpd file, or the ATAK Companion API isnt running yet. Try refreshing the web page.</li>
@@ -360,7 +368,7 @@ Etherneting the RPi to ATAK directly. Bluetooth has the potential to be an optio
 
 <h3><u>TAK Tracker</u></h3>
 <ul>
-<li>TAK Callsign is the name the device gets populated as on TAK map.</li>
+<li>TAK Callsign is the name the device gets populated as on TAK map. TAK Callsign should not include spaces, or only have numbers!</li>
 <li>Ping rate is in seconds of how often the tracker gets refreshed on the TAK map</li>
 <li>CoT Type is the marker/icon used.</li>
 <li>TAK Tracker service does NOT continue running when kismet service is stopped</li>
@@ -597,8 +605,6 @@ document.getElementById("alert-legend").setAttribute("style", "border:1px solid 
 };
 
 function pushFileTargets() {
-//add array filter condition so valid ssid/macs are in
-//document.getElementById("test").innerHTML = targetListStringFile;
 targetListArrayFile = targetListStringFile.split(",");
 targetListArray.push(...targetListArrayFile);
 targetList.innerHTML = "";
@@ -645,7 +651,7 @@ document.getElementById("takserverIcon").setAttribute("class", "fa fa-chevron-ci
 };
 };
 
-function multicastDrop() {document.getElementById("multicastDrop").classList.toggle("show"); //receiveInterfacesJson();
+function multicastDrop() {document.getElementById("multicastDrop").classList.toggle("show");
 if (document.getElementById("multicastIcon").getAttribute("class") == "fa fa-chevron-circle-right") {
 document.getElementById("multicastIcon").setAttribute("class", "fa fa-chevron-circle-down");
 } else {
@@ -1074,5 +1080,89 @@ receivePersistJson();
 </div>
 	`);
 	});
+    },
+});
+
+
+kismet_ui.AddDeviceColumn('column_foo_channel', {
+    sTitle: 'TAK Forwarder',
+    field: 'kismet.device.base.macaddr',
+    sanitize: true,
+    renderfunc: function(data, type, row, meta) {
+return `
+
+<button style="background:black; border:2px solid darkgray; color:white; width:80px" id="tak-fwd-${data}"><b>TAK-FWD</b></button>
+<p id ="test${data}"></p>
+<script>
+
+var currentHostname = window.location.hostname;
+var cot;
+//var status;
+var test;
+
+function post_data(send) {
+fetch('http://'+currentHostname+':8000/device', {
+method: 'POST',
+body: JSON.stringify(send)
+})
+.then(response => {
+if (response.ok) {
+console.log('cot sent to backend');
+} else {
+console.error('cot failed to send');
+}
+})
+.catch(error => {
+console.error('cot error: ', error);
+});
+};
+
+
+async function get_data(mac) {
+try {
+const response = await fetch('http://'+currentHostname+':2501//devices/by-mac/'+mac+'/devices.json');
+if (!response.ok) {
+throw new Error('Network response was not ok');
+}
+const getData = await response.json();
+console.log(getData);
+var lat1 = getData[0]['kismet.device.base.signal']['field.unknown.not.registered']['kismet.common.location.geopoint'][1];
+var lon1 = getData[0]['kismet.device.base.signal']['field.unknown.not.registered']['kismet.common.location.geopoint'][0];
+//var lat2 = getData[0]['kismet.device.base.location']['kismet.common.location.avg_loc']['kismet.common.location.geopoint'][1];
+//var lon2 = getData[0]['kismet.device.base.location']['kismet.common.location.avg_loc']['kismet.common.location.geopoint'][0];
+var currentDevice = getData[0]['kismet.device.base.commonname'];
+cot = {lat:lat1, lon:lon1, device:currentDevice};
+} catch (error) {
+console.error('Error fetching data:', error);
+}
+};
+
+//onclick function starts
+document.getElementById("tak-fwd-${data}").onclick = async function(event) {
+event.stopPropagation();
+await get_data('${data}');
+//document.getElementById("test${data}").innerHTML = JSON.stringify(cot);
+var status;
+if (cot === undefined || cot.device === undefined) {
+status = false;
+} else {
+status = true;
+}
+
+if (status === true) {
+post_data(cot);
+document.getElementById("tak-fwd-${data}").innerHTML = "SENT!";
+document.getElementById("tak-fwd-${data}").setAttribute("style", "background:black; border:2px solid green; color:white; width:80px");
+} else {
+document.getElementById("tak-fwd-${data}").innerHTML = "NO-GPS!";
+document.getElementById("tak-fwd-${data}").setAttribute("style", "background:black; border:2px solid red; color:white; width:80px");
+}
+
+cot = undefined;
+status = undefined;
+}; //end of onclick function()
+
+</script>
+`
     },
 });
