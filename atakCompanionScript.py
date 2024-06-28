@@ -20,7 +20,7 @@ def stop_server():
     subprocess.run(["systemctl", "--user", "stop", "run_atakCompanion.service"])
 
 def main():
-    server_active = True
+    server_active = False
 
     while True:
         kismet_active = is_kismet_active()
