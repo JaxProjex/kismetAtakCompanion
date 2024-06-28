@@ -1,6 +1,8 @@
 # kismetAtakCompanion
 Kismet Plugin that forwards Alerts and detection of targeted MAC Addresses and SSIDs to TAK Devices as GeoChat messages and CoT markers on TAK Map using Multicast or TAKServer.
 
+Works only for "Release" version of kismet, NOT the "git" version. this is because scanned device datatables are different between git and release version. 
+
 Install ATAK Companion Plugin:
 
 -go to your users home directory:
