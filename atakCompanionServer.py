@@ -6,7 +6,6 @@ import subprocess #to run ifconfig and ssl decrypt
 import re #extract ip addresses
 import asyncio #for websocket client
 import socket #for getting network interfaces, multicasting out
-#import urllib.parse
 import json #for get/post/ws api data
 import time #tak tracker ping rate
 from datetime import datetime, timedelta #for cot time / stale
@@ -15,10 +14,13 @@ import random #to generate random uids for tak chat messages
 import os #to get local system files (~/.kismet/kismet_httpd.conf
 import requests #to get local files (takserver certs)
 import ssl #for takserver cot sending
+#import cv2 #for opencv video recording
 
-current_time = datetime.now()
+current_time = datetime.now() #system time
 date = current_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 stale = (current_time + timedelta(minutes=20)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+current_timestamp = 0 #kismet time seconds
+device_seen = 0
 
 current_ip = ""
 current_user = ""
@@ -27,10 +29,6 @@ current_password = ""
 #kismet api gps
 current_lat = "0.0"
 current_lon = "0.0"
-
-#gpsd gps
-gpsd_lat = "0.0"
-gpsd_lon = "0.0"
 
 # TAKServer details
 takserver_user = 'certs/user_pem.pem' #update file paths .kismet/plugins/myTest
@@ -55,10 +53,15 @@ multicast_interface = ""
 notification_chat_service = False
 notification_chat_format = ""
 
-#alert/notification cot details
+# alert/notification cot details
 notification_cot_service = False
 notification_cot_type = ""
 notification_cot_color = ""
+
+# video/image details
+#video_service = True
+#video_url = "http://motioneye.local:9081"
+#video_active = False
 
 # TAK tracker details
 tracker_service = False
@@ -137,7 +140,6 @@ def key_decrypt(password):
     except subprocess.CalledProcessError as e:
         print("Command failed with exception:", e)
 
-
 class RequestHandler(BaseHTTPRequestHandler):
 
     def do_OPTIONS(self):
@@ -148,7 +150,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_POST(self):
-        global takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
+        global video_url, video_service, video_active, takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
         content_length = int(self.headers['Content-Length'])
         post_data = self.rfile.read(content_length)
         if self.path == '/config':
@@ -169,6 +171,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                 handle_tracker(json_data)
             elif message_id == 'target':
                 handle_target(json_data)
+#            elif message_id == 'video':
+#                handle_video(json_data)
             else:
                 self.handle_default(json_data)
         elif self.path == '/uploadUserPem':
@@ -198,6 +202,10 @@ class RequestHandler(BaseHTTPRequestHandler):
             absolute_file_path = os.path.join(upload_directory, file_name)
             with open(absolute_file_path, 'wb') as f:
                 f.write(post_data)
+        elif self.path == '/device':
+            data = post_data.decode('utf-8')
+            json_data = json.loads(data)
+            handle_device(json_data)
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
         self.send_header('Access-Control-Allow-Origin', '*')
@@ -231,7 +239,7 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b'Not Found in python Do_Get')
 
-def cot_template(marker, cot_type, cot_color, cot_callsign, cot_uid, cot_message, uid_message):
+def cot_template(marker, cot_type, cot_color, cot_callsign, cot_uid, cot_message, uid_message, cot_lat, cot_lon):
     global takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, tracker_callsign, target_service, target_list
     print("cot_template...")
     if (marker == 'spot'):
@@ -242,8 +250,8 @@ def cot_template(marker, cot_type, cot_color, cot_callsign, cot_uid, cot_message
         cot_xml.set('start', date)
         cot_xml.set('stale', stale)
         point = ET.SubElement(cot_xml, 'point')
-        point.set('lat', current_lat)
-        point.set('lon', current_lon)
+        point.set('lat', cot_lat)
+        point.set('lon', cot_lon)
         point.set('hae', '0.0')
         point.set('ce', '9999999.0')
         point.set('le', '9999999.0')
@@ -267,8 +275,8 @@ def cot_template(marker, cot_type, cot_color, cot_callsign, cot_uid, cot_message
         cot_xml.set('start', date)
         cot_xml.set('stale', stale)
         point = ET.SubElement(cot_xml, 'point')
-        point.set('lat', current_lat)
-        point.set('lon', current_lon)
+        point.set('lat', cot_lat)
+        point.set('lon', cot_lon)
         point.set('hae', '0.0')
         point.set('ce', '9999999.0')
         point.set('le', '9999999.0')
@@ -290,8 +298,8 @@ def cot_template(marker, cot_type, cot_color, cot_callsign, cot_uid, cot_message
         cot_xml.set('start', date)
         cot_xml.set('stale', stale)
         point = ET.SubElement(cot_xml, 'point')
-        point.set('lat', current_lat)
-        point.set('lon', current_lon)
+        point.set('lat', cot_lat)
+        point.set('lon', cot_lon)
         point.set('hae', '0.0')
         point.set('ce', '9999999.0')
         point.set('le', '9999999.0')
@@ -315,8 +323,8 @@ def cot_template(marker, cot_type, cot_color, cot_callsign, cot_uid, cot_message
         cot_xml.set('start', date)
         cot_xml.set('stale', stale)
         point = ET.SubElement(cot_xml, 'point')
-        point.set('lat', current_lat)
-        point.set('lon', current_lon)
+        point.set('lat', cot_lat)
+        point.set('lon', cot_lon)
         point.set('hae', '0.0')
         point.set('ce', '9999999.0')
         point.set('le', '9999999.0')
@@ -390,8 +398,8 @@ def cot_template(marker, cot_type, cot_color, cot_callsign, cot_uid, cot_message
         cot_xml.set('start', date)
         cot_xml.set('stale', stale)
         point = ET.SubElement(cot_xml, 'point')
-        point.set('lat', current_lat)
-        point.set('lon', current_lon)
+        point.set('lat', cot_lat)
+        point.set('lon', cot_lon)
         point.set('hae', '0.0')
         point.set('ce', '9999999.0')
         point.set('le', '9999999.0')
@@ -509,8 +517,10 @@ def handle_tracker(data): #tracker config, start background tracker service (thr
         tracker_cot = data.get('cot')
         tracker_color = data.get('rgb')
         tracker_rate = data.get('rate')
-        tracker_callsign = data.get('name')
+        tracker_callsign = data.get('name') #filter to replace spaces with underscores...
         tracker_service = True
+        if tracker_callsign == "":
+            tracker_callsign = "kismet-tracker"
         start_tracker_service()
     elif data.get('service') == False:
         tracker_service = False
@@ -525,6 +535,77 @@ def handle_target(data): #store target list submitted
     elif data.get('service') == False:
         target_service = False
 
+#def handle_video(data): #video submitted
+#    global video_url, video_service, video_active
+#    print("handle_video...")
+#    if data.get('service') == True:
+#        video_service = True
+#        video_url = data.get('url')
+#    elif data.get('service') == False:
+#        video_service = False
+
+#def start_recording(device, start_timestamp):
+#    global video_url, video_active, video_service, current_timestamp, device_seen, httpd_username, httpd_password
+#    device_timestamp = 0
+#    print("start_recording")
+#    cap = cv2.VideoCapture(video_url)
+#    if not cap.isOpened():
+#        print("error: could not open video")
+#    frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+#    frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+#    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+#    out = cv2.VideoWriter('/home/pi/junk/'+device+'_'+str(start_timestamp)+'.avi', fourcc, 1.0, (frame_width, frame_height))
+#    response = requests.get("http://localhost:2501/devices/by-mac/"+device+"/devices.json?user="+httpd_username+"&password="+httpd_password+"")
+#    if response.status_code == 200:
+#        data = response.json()
+#        device_timestamp = data[0]['kismet.device.base.last_time']
+#    print(current_timestamp)
+#    print(device_timestamp)
+#    print("recording STARTED...")
+#    if video_service == True:
+#        while current_timestamp - device_timestamp < 30 and current_timestamp - start_timestamp < 300:
+#            response = requests.get("http://localhost:2501/devices/by-mac/"+device+"/devices.json?user="+httpd_username+"&password="+httpd_password+"")
+#            if response.status_code == 200:
+#                data = response.json()
+#                device_timestamp = data[0]['kismet.device.base.last_time']
+           # video_active = True
+#            ret, frame = cap.read()
+#            if ret:
+#                out.write(frame)
+#            else:
+#                break
+#        cap.release()
+#        out.release()
+#        cv2.destroyAllWindows()
+       # video_active = False
+#        print("recording STOPPED...")
+
+def handle_device(data):
+    print("handle_device...")
+    device_lat = str(data.get('lat'))
+    device_lon = str(data.get('lon'))
+    device = str(data.get('device'))
+    if (notification_cot_service):
+        print("send notification cot")
+        marker = "cot"
+        if (notification_cot_type == "a-f-G-U-C"):
+            marker = "teammate"
+        elif (notification_cot_type == "b-m-p-s-m"):
+            marker = "spot"
+        elif (notification_cot_type == "pushpin"):
+            marker = "pushpin"
+        elif (notification_cot_type == "caution"):
+            marker = "caution"
+        if (multicast_service):
+            print("send notification cot over multicast")
+            cot = cot_template(marker, notification_cot_type, notification_cot_color, device, device, "", device, device_lat, device_lon)
+            cot_send_multicast(cot, multicast_address, multicast_port, multicast_interface)
+        if (takserver_service):
+            print("send notification cot over takserver")
+            cot = cot_template(marker, notification_cot_type, notification_cot_color, device, device, "", device, device_lat, device_lon)
+            cot_send_takserver(cot)
+
+
 def handle_default(data):
     print("handle_default...")
 
@@ -532,11 +613,12 @@ def handle_gps(data): #ws eventbus gps_location
     global current_lat, current_lon, takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
     current_lat = str(data.get('kismet.common.location.geopoint')[1])
     current_lon = str(data.get('kismet.common.location.geopoint')[0])
-    print("handle_gps...")
+    #print("handle_gps...")
 
 def handle_alert(data): #ws eventbus alerts
     global takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
     print("handle_alert...")
+    print(data)
     alert_severity = data.get('kismet.alert.severity')
     alert_header = data.get('kismet.alert.header')
     alert_class = data.get('kismet.alert.class')
@@ -558,20 +640,26 @@ def handle_alert(data): #ws eventbus alerts
         name = "Alert: Info"
     alert_remark = alert_header + ", " + str(alert_class) + ", " + str(name) + ", " + str(alert_text) + ", Destination MAC: " + str(alert_dest) + ", Source MAC: " + str(alert_src) + ", Transmitter MAC: " + str(alert_tx)
     trigger_target(alert_remark, alert_src)
-    print("trigger_target from handle alert")
 
 def handle_message(data): #ws eventbus messages
     global takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
-    print("handle_message...")
+    #print("handle_message...")
     if (target_service == True):
         device = data.get('kismet.messagebus.message_string')
         for target in target_list:
-            if any(substring in device for substring in target_list):
-                trigger_target(device, target)
+            if target in device:
                 print("target match from handle_message")
+                print(target)
+                trigger_target(device, target)
+                start_recording_service(target)
+
+def handle_timestamp(data):
+    global current_timestamp
+    #print("handle_timestamp...")
+    current_timestamp = data.get('kismet.system.timestamp.sec')
 
 def trigger_target(remarks, target): #used by kismet alerts and tak tracker
-    global takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
+    global current_lat, current_lon, takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
     print("trigger_target")
     if (notification_cot_service):
         print("send notification cot")
@@ -587,25 +675,25 @@ def trigger_target(remarks, target): #used by kismet alerts and tak tracker
                 marker = "caution"
             if (multicast_service):
                 print("send notification cot over multicast")
-                cot = cot_template(marker, notification_cot_type, notification_cot_color, target, target, remarks, target)
+                cot = cot_template(marker, notification_cot_type, notification_cot_color, target, target, remarks, target, current_lat, current_lon)
                 cot_send_multicast(cot, multicast_address, multicast_port, multicast_interface)
             if (takserver_service):
                 print("send notification cot over takserver")
-                cot = cot_template(marker, notification_cot_type, notification_cot_color, target, target, remarks, target)
+                cot = cot_template(marker, notification_cot_type, notification_cot_color, target, target, remarks, target, current_lat, current_lon)
                 cot_send_takserver(cot)
         if (notification_chat_service):
             print("send notification chat")
             if (multicast_service):
                 print("send notification chat over multicast")
-                cot = cot_template("chat", "cot_type", "cot_color", "Kismet-Chat-multicast", "uid_chat_temporary3", remarks, random.uniform(1000, 0))
+                cot = cot_template("chat", "cot_type", "cot_color", "Kismet-Chat-multicast", "uid_chat_temporary3", remarks, random.uniform(1000, 0), current_lat, current_lon)
                 cot_send_multicast(cot, multicast_address, multicast_port, multicast_interface)
             if (takserver_service):
                 print("send notification chat over takserver")
-                cot = cot_template("chat", "cot_type", "cot_color", "Kismet-Chat-takserver", "uid_chat_temporary4", remarks, random.uniform(1000, 0))
+                cot = cot_template("chat", "cot_type", "cot_color", "Kismet-Chat-takserver", "uid_chat_temporary4", remarks, random.uniform(1000, 0), current_lat, current_lon)
                 cot_send_takserver(cot)
 
 def trigger_tracker():
-    global takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
+    global current_lat, current_lon, takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
     print("tracker trigger")
     while (tracker_service == True):
         if (current_lat != "0.0" and current_lon != "0.0"):
@@ -620,11 +708,11 @@ def trigger_tracker():
                 marker = "caution"
             if (multicast_service == True):
                 print("send tracker cot over multicast")
-                cot = cot_template(marker, tracker_cot, tracker_color, tracker_callsign, tracker_callsign, "", "")
+                cot = cot_template(marker, tracker_cot, tracker_color, tracker_callsign, tracker_callsign, "", "", current_lat, current_lon)
                 cot_send_multicast(cot, multicast_address, multicast_port, multicast_interface)
             if (takserver_service == True):
                 print("send tracker cot over takserver")
-                cot = cot_template(marker, tracker_cot, tracker_color, tracker_callsign, tracker_callsign, "", "")
+                cot = cot_template(marker, tracker_cot, tracker_color, tracker_callsign, tracker_callsign, "", "", current_lat, current_lon)
                 cot_send_takserver(cot)
             time.sleep(int(tracker_rate))
 
@@ -633,13 +721,20 @@ def start_tracker_service(): #start tracker pings in threading so other code can
     tracker_thread.daemon = True
     tracker_thread.start()
 
+#def start_recording_service(device): #start video url recording in threading so other code can continue to run
+#    video_thread = threading.Thread(target=start_recording, args=(device,current_timestamp))
+#    video_thread.daemon = True
+#    video_thread.start()
+
+
+
 async def subscribe_to_ws():
     global uri
     print("subscribe_to_ws is running")
     while True:
         try:
             async with websockets.connect(uri) as websocket:
-                topics = ["TIMESTAMP", "ALERT", "GPS_LOCATION"] #kismet ws event topics
+                topics = ["TIMESTAMP", "ALERT", "GPS_LOCATION", "MESSAGE"] #kismet ws event topics
                 for topic in topics:
                     subscription_message = {"SUBSCRIBE": topic}
                     await websocket.send(json.dumps(subscription_message))
@@ -656,6 +751,9 @@ async def subscribe_to_ws():
                     elif json_data.get('MESSAGE'):
                         message_data = json_data.get('MESSAGE')
                         handle_message(message_data)
+                    elif json_data.get('TIMESTAMP'):
+                        message_data = json_data.get('TIMESTAMP')
+                        handle_timestamp(message_data)
                     #print("Received message:", json_data)
         except Exception as e:
             print("WebSocket connection closed. Reconnecting...")
