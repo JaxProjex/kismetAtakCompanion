@@ -239,7 +239,7 @@ button {
 <div id="multicastDrop" class="dropdown-container">
 <span style="padding:10px"><label for="multicast-enable">Enable:</label><label class="enableSwitch"><input id="multicast-enable" type="checkbox"><span class="slider"></span></label></span>
 <br><br><span style="padding:10px"><label for="multicast-select">Multicast Address:</label><select name="multicast-select" id="multicast-select" disabled="true">
-<option value="default" selected>239.2.3.1:6969 (Default)</option><option value="sensor">239.5.5.55:7171 (Sensor)</option><option id="chat">224.10.10.1:17012 (Chat)</option></select></span>
+<option value="default" selected>239.2.3.1:6969 (Default)</option><option value="sensor">239.5.5.55:7171 (Sensor)</option></select></span>
 <br><br><span style="padding:10px"><label for="multicast-nic">Multicast NIC:</label><select name="multicast-nic" id="multicast-nic" disabled="true"></select></span>
 <br><br><span style="padding:10px"><button class="submitButton disabled" id="multicast-submit" type="button" disabled=true><b>Submit</b></button><span id="multicast-status"></span></span>
 <br><br><span id="multicast-config"></span>
@@ -651,7 +651,8 @@ document.getElementById("takserverIcon").setAttribute("class", "fa fa-chevron-ci
 };
 };
 
-function multicastDrop() {document.getElementById("multicastDrop").classList.toggle("show");
+function multicastDrop() {
+document.getElementById("multicastDrop").classList.toggle("show");
 if (document.getElementById("multicastIcon").getAttribute("class") == "fa fa-chevron-circle-right") {
 document.getElementById("multicastIcon").setAttribute("class", "fa fa-chevron-circle-down");
 } else {
@@ -696,37 +697,39 @@ multicastNic.innerHTML += "<option value=" + value.ip[0] + " id=" + value.interf
 };
 
 function updateTargetHtml(value) {
+if (value !== "") {
 targetList.innerHTML += "<option value=" + value + " id=" + value + ">" + value + "</option>";
+}
 };
 
 function persistData() {
-if (rawTakserverService === true) {
+if (rawTakserverService === true || rawTakserverAddress !== "") {
 takserverEnable.checked = rawTakserverService;
 takserver.value = rawTakserverAddress;
 takserverPassword.value = rawTakserverPassword;
 };
-if (rawMulticastService === true) {
+if (rawMulticastService === true || (rawMulticastSelect !== "" && rawMulticastInterface !== "")) {
 multicastEnable.checked = rawMulticastService;
 multicastSelect.value = rawMulticastSelect;
 multicastNic.value = rawMulticastInterface;
 };
-if (rawNotificationChatService === true) {
+if (rawNotificationChatService === true || rawNotificationChatFormat !== "") {
 notificationChat.checked = rawNotificationChatService;
 alertChatFormat.value = rawNotificationChatFormat;
 };
-if (rawNotificationCotService === true) {
+if (rawNotificationCotService === true || (rawNotificationCotType !== "" && rawNotificationCotColor!== "")) {
 notificationCot.checked = rawNotificationCotService;
 alertCotType.value = rawNotificationCotType;
 alertCotColor.value = rawNotificationCotColor;
 };
-if (rawTrackerService === true) {
+if (rawTrackerService === true || (rawTrackerCallsign !== "" && rawTrackerRate !== 0 && rawTrackerCot !== "" && rawTrackerColor !== "")) {
 trackerEnable.checked = rawTrackerService;
-trackerCallsign.value = rawTrackerCallsign
+trackerCallsign.value = rawTrackerCallsign;
 trackerRate.value = rawTrackerRate;
 kismetCotType.value = rawTrackerCot;
 kismetCotColor.value = rawTrackerColor;
 };
-if (rawTargetService === true) {
+if (rawTargetList[0] !== "") {
 targetEnable.checked = rawTargetService;
 targetList.value = rawTargetList;
 targetListArray = rawTargetList;
@@ -801,6 +804,7 @@ return response.json();
 .then(data => {
 console.log(data);
 localInterfaces = data.interfaces;
+//localInterfaces.forEach(updateInterfaceHtml);
 })
 .catch(error => {
 console.error('Error fetching data:', error);
@@ -837,6 +841,8 @@ rawTrackerRate = data.tracker[3];
 rawTrackerCallsign = data.tracker[4];
 rawTargetService = data.target[0];
 rawTargetList = data.target[1];
+//receiveInterfacesJson();
+multicastNic.innerHTML = "";
 localInterfaces.forEach(updateInterfaceHtml);
 persistData();
 checkInitialize();
@@ -866,7 +872,7 @@ userCert.disabled = true;
 userKey.disabled = true;
 rootCert.disabled = true;
 takserverSubmit.disabled = true;
-parametersTakserver("","",false);
+parametersTakserver("","","",false);
 document.getElementById("takserver-legend").setAttribute("style", "border:1px solid white")
 }
 };
@@ -876,9 +882,8 @@ if (multicastEnable.checked === true) {
 multicastSelect.disabled = false;
 multicastNic.disabled = false;
 multicastSubmit.disabled = false;
-multicastNic.innerHTML = "";
-receiveInterfacesJson();
-localInterfaces.forEach(updateInterfaceHtml);
+//receiveInterfacesJson();
+//localInterfaces.forEach(updateInterfaceHtml);
 } else {
 multicastSelect.disabled = true;
 multicastNic.disabled = true;
@@ -944,7 +949,7 @@ trackerCallsign.disabled = true;
 kismetCotType.disabled = true;
 kismetCotColor.disabled = true;
 trackerSubmit.disabled = true;
-parametersTracker("","","",false);
+parametersTracker("","","","",false);
 document.getElementById("tracker-legend").setAttribute("style", "border:1px solid white")
 }
 };
@@ -1069,7 +1074,7 @@ document.getElementById('file-target').value = null;
 
 checkInitialize();
 receiveInterfacesJson();
-localInterfaces.forEach(updateInterfaceHtml);
+//localInterfaces.forEach(updateInterfaceHtml);
 receivePersistJson();
 //persistData();
 //matchValues();
