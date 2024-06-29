@@ -14,7 +14,10 @@ import random #to generate random uids for tak chat messages
 import os #to get local system files (~/.kismet/kismet_httpd.conf
 import requests #to get local files (takserver certs)
 import ssl #for takserver cot sending
+import configparser #for reading/writing atakCompanionConfig.conf file
 #import cv2 #for opencv video recording
+
+config = configparser.ConfigParser()
 
 current_time = datetime.now() #system time
 date = current_time.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
@@ -39,14 +42,14 @@ takserver_password = ""
 takserver_cert_service = False
 takserver_service = False
 takserver_address = ""
-takserver_port = ""
+takserver_port = 0
 takserver_protocol = ""
 
 # multicast details
 multicast_service = False
 multicast_select = ""
 multicast_address = ""
-multicast_port = ""
+multicast_port = 0
 multicast_interface = ""
 
 # alert/notification chat details
@@ -66,7 +69,7 @@ notification_cot_color = ""
 # TAK tracker details
 tracker_service = False
 tracker_callsign = ""
-tracker_rate = ""
+tracker_rate = 0
 tracker_cot = ""
 tracker_color = ""
 
@@ -161,16 +164,22 @@ class RequestHandler(BaseHTTPRequestHandler):
                 handle_initialize(json_data)
             elif message_id == 'takserver':
                 handle_takserver(json_data)
+                #set_takserver_config()
             elif message_id == 'multicast':
                 handle_multicast(json_data)
+                #set_multicast_config()
             elif message_id == 'notification-cot':
                 handle_notification_cot(json_data)
+                #set_alert_cot_config()
             elif message_id == 'notification-chat':
                 handle_notification_chat(json_data)
+                #set_alert_chat_config()
             elif message_id == 'tracker':
                 handle_tracker(json_data)
+                #set_tracker_config()
             elif message_id == 'target':
                 handle_target(json_data)
+                #set_target_config()
 #            elif message_id == 'video':
 #                handle_video(json_data)
             else:
@@ -469,13 +478,14 @@ def handle_takserver(data): #takserver config
             key_decrypt(data.get('key'))
     elif data.get('service') == False:
         takserver_service = False
+    set_takserver_config()
 
 def handle_multicast(data): #multicast config
     global takserver_service, takserver_address, takserver_port, multicast_service, multicast_select, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
     print("handle_multicast...")
-    multicast_interface = data.get('net')
-    multicast_select = data.get('udp')
     if data.get('service') == True:
+        multicast_interface = data.get('net')
+        multicast_select = data.get('udp')
         multicast_service = True
         if data.get('udp') == 'default':
             multicast_address = '239.2.3.1'
@@ -488,8 +498,8 @@ def handle_multicast(data): #multicast config
             multicast_port = 17012
     elif data.get('service') == False:
         multicast_service = False
-    print(data.get('net'))
-    print(multicast_interface)
+    set_multicast_config()
+
 
 def handle_notification_cot(data): #alert/notification config
     global takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
@@ -500,6 +510,7 @@ def handle_notification_cot(data): #alert/notification config
         notification_cot_color = data.get('rgb')
     elif data.get('service') == False:
         notification_cot_service = False
+    set_alert_cot_config()
 
 def handle_notification_chat(data): #chat config
     global takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
@@ -509,6 +520,7 @@ def handle_notification_chat(data): #chat config
         notification_chat_format = data.get('type')
     elif data.get('service') == False:
         notification_chat_service = False
+    set_alert_chat_config()
 
 def handle_tracker(data): #tracker config, start background tracker service (threading)
     global takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, tracker_callsign, target_list
@@ -524,6 +536,7 @@ def handle_tracker(data): #tracker config, start background tracker service (thr
         start_tracker_service()
     elif data.get('service') == False:
         tracker_service = False
+    set_tracker_config()
 
 def handle_target(data): #store target list submitted
     global takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
@@ -534,6 +547,7 @@ def handle_target(data): #store target list submitted
         print(str(target_list))
     elif data.get('service') == False:
         target_service = False
+    set_target_config()
 
 #def handle_video(data): #video submitted
 #    global video_url, video_service, video_active
@@ -605,9 +619,118 @@ def handle_device(data):
             cot = cot_template(marker, notification_cot_type, notification_cot_color, device, device, "", device, device_lat, device_lon)
             cot_send_takserver(cot)
 
-
 def handle_default(data):
     print("handle_default...")
+
+
+def get_config():
+    print("get_config...")
+    global takserver_service, takserver_address, takserver_port, takserver_cert_service, takserver_password, multicast_service, multicast_address, multicast_select, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_callsign, tracker_cot, tracker_color, target_service, target_list, target_list_filter
+    config.read(os.path.expanduser('~/.kismet/plugins/atakCompanion/persist/atakCompanionConfig.ini'))
+
+    # takserver details
+    takserver_password = config['TAKSERVER']['password']
+    takserver_cert_service = eval(config['TAKSERVER']['cert_service'])
+    takserver_service = eval(config['TAKSERVER']['service'])
+    takserver_address = config['TAKSERVER']['hostname']
+    takserver_port = int(config['TAKSERVER']['port'])
+    takserver_protocol = config['TAKSERVER']['protocol']
+
+    # multicast details
+    multicast_service = eval(config['MULTICAST']['service'])
+    multicast_select = config['MULTICAST']['select']
+    multicast_address = config['MULTICAST']['address']
+    multicast_port = int(config['MULTICAST']['port'])
+    multicast_interface = config['MULTICAST']['interface']
+
+    # alert/notification chat details
+    notification_chat_service = eval(config['ALERTS']['chat_service'])
+    notification_chat_format = config['ALERTS']['chat_format']
+
+    # alert/notification cot details
+    notification_cot_service = eval(config['ALERTS']['cot_service'])
+    notification_cot_type = config['ALERTS']['cot_type']
+    notification_cot_color = config['ALERTS']['cot_color']
+
+    # TAK tracker details
+    tracker_service = eval(config['TRACKER']['service'])
+    tracker_callsign = config['TRACKER']['callsign']
+    tracker_rate = int(config['TRACKER']['rate'])
+    tracker_cot = config['TRACKER']['cot_type']
+    tracker_color = config['TRACKER']['cot_color']
+
+    # target details
+    target_service = eval(config['TARGET']['service'])
+    target_list = config['TARGET']['targets'].split(',')
+    target_list_filter = config['TARGET']['targets_filter'].split(',')
+
+
+def set_takserver_config():
+    global config, takserver_service, takserver_address, takserver_port, takserver_cert_service, takserver_password, takserver_protocol, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
+    # takserver details
+    config['TAKSERVER']['password'] = str(takserver_password)
+    config['TAKSERVER']['cert_service'] = str(takserver_cert_service)
+    config['TAKSERVER']['service'] = str(takserver_service)
+    config['TAKSERVER']['hostname'] = takserver_address
+    config['TAKSERVER']['port'] = str(takserver_port)
+    config['TAKSERVER']['protocol'] = takserver_protocol
+    with open(os.path.expanduser('~/.kismet/plugins/atakCompanion/persist/atakCompanionConfig.ini'), 'w') as configfile:
+        config.write(configfile)
+    print("updated changes to atakCompanionConfig.ini file")
+
+def set_multicast_config():
+    global config, takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_select, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
+    # multicast details
+    config['MULTICAST']['service'] = str(multicast_service)
+    config['MULTICAST']['select'] = multicast_select
+    config['MULTICAST']['address'] = multicast_address
+    config['MULTICAST']['port'] = str(multicast_port)
+    config['MULTICAST']['interface'] = multicast_interface
+    with open(os.path.expanduser('~/.kismet/plugins/atakCompanion/persist/atakCompanionConfig.ini'), 'w') as configfile:
+        config.write(configfile)
+    print("updated changes to atakCompanionConfig.ini file")
+
+def set_alert_chat_config():
+    global config, takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
+    # alert/notification chat details
+    config['ALERTS']['chat_service'] = str(notification_chat_service)
+    config['ALERTS']['chat_format'] = notification_chat_format
+    with open(os.path.expanduser('~/.kismet/plugins/atakCompanion/persist/atakCompanionConfig.ini'), 'w') as configfile:
+        config.write(configfile)
+    print("updated changes to atakCompanionConfig.ini file")
+
+def set_alert_cot_config():
+    global config, takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
+    # alert/notification cot details
+    config['ALERTS']['cot_service'] = str(notification_cot_service)
+    config['ALERTS']['cot_type'] = notification_cot_type
+    config['ALERTS']['cot_color'] = notification_cot_color
+    with open(os.path.expanduser('~/.kismet/plugins/atakCompanion/persist/atakCompanionConfig.ini'), 'w') as configfile:
+        config.write(configfile)
+    print("updated changes to atakCompanionConfig.ini file")
+
+def set_tracker_config():
+    global config, takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_callsign, tracker_color, target_service, target_list
+    # TAK tracker details
+    config['TRACKER']['service'] = str(tracker_service)
+    config['TRACKER']['callsign'] = tracker_callsign
+    config['TRACKER']['rate'] = str(tracker_rate)
+    config['TRACKER']['cot_type'] = tracker_cot
+    config['TRACKER']['cot_color'] = tracker_color
+    with open(os.path.expanduser('~/.kismet/plugins/atakCompanion/persist/atakCompanionConfig.ini'), 'w') as configfile:
+        config.write(configfile)
+    print("updated changes to atakCompanionConfig.ini file")
+
+def set_target_config():
+    global config, takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
+    # target details
+    config['TARGET']['service'] = str(target_service)
+    config['TARGET']['targets'] = (',').join(target_list)
+    config['TARGET']['targets_filter'] = (',').join(target_list_filter)
+    with open(os.path.expanduser('~/.kismet/plugins/atakCompanion/persist/atakCompanionConfig.ini'), 'w') as configfile:
+        config.write(configfile)
+    print("updated changes to atakCompanionConfig.ini file")
+
 
 def handle_gps(data): #ws eventbus gps_location
     global current_lat, current_lon, takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
@@ -767,6 +890,7 @@ def main_server(server_class=HTTPServer, handler_class=RequestHandler, host='', 
     server_address = (host, port)
     httpd = server_class(server_address, handler_class)
     print(f'Starting server on port {port}...')
+    get_config()
     httpd.serve_forever()
 
 if __name__ == '__main__':
