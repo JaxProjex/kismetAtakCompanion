@@ -322,7 +322,6 @@ Etherneting the RPi to ATAK directly. Bluetooth has the potential to be an optio
 <li>TAK-FWD button will send CoT marker on your messaging protocol configured (multicast/TAKServer) along with the CoT marker and color you configured in the Alerts Config</li>
 <li>When TAK-FWD button clicked it will either return "SENT!" or "NO-GPS!". If "NO-GPS!", this isnt because you dont have a valid GPS location data being pulled but because the device selected doesnt have GPS location attached to it in the device details. This is often an issue only with WiFi-Clients and WiFi-Bridge</li>
 <li>MUST enable and configure TAKServer Config or Multicast Config AND enable and configure Alerts Config for TAK Forwarder to work</li>
-<li></li>
 </ul>
 
 <h3><u>Initialize</u></h3>
@@ -358,7 +357,7 @@ Etherneting the RPi to ATAK directly. Bluetooth has the potential to be an optio
 
 <h3><u>Targets</u></h3>
 <ul>
-<li>Targets are a temporary local instance, they do NOT persist and save when kismet service turns off</li>
+<li>Targets now persist and are saved with the rest of config settings in atakCompanionConfig.ini file</li>
 <li>Targets do NOT get added to kismets /etc/kismet/kismet_alerts.conf file, they are just filtered from the message bus of detected devices and are not actual kismet alerts.</li>
 <li>If you want kismet targets to persist you should add them in /etc/kismet/kismet_alerts.conf file where they will be handled as a Kismet Alert.</li>
 <li>Alert CoT/Chat service should be enabled if you want to receive CoT/Chat messages over TAK when these targets are detected!</li>
