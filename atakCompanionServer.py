@@ -543,7 +543,8 @@ def handle_target(data): #store target list submitted
     print("handle_target...")
     if data.get('service') == True:
         target_service = True
-        target_list = data.get('targets')
+        target_temp = data.get('targets')
+        target_list = list(filter(None, target_temp))
         print(str(target_list))
     elif data.get('service') == False:
         target_service = False
@@ -848,8 +849,6 @@ def start_tracker_service(): #start tracker pings in threading so other code can
 #    video_thread = threading.Thread(target=start_recording, args=(device,current_timestamp))
 #    video_thread.daemon = True
 #    video_thread.start()
-
-
 
 async def subscribe_to_ws():
     global uri
