@@ -424,7 +424,6 @@ var targetSubmit = document.getElementById("target-submit");
 var targetListArray = [];
 var targetListArrayFile = [];
 var targetListStringFile;
-var testArray = ["ghd", "uuu", 123, "fd"];
 
 var localInterfaces = [];
 
@@ -729,7 +728,7 @@ trackerRate.value = rawTrackerRate;
 kismetCotType.value = rawTrackerCot;
 kismetCotColor.value = rawTrackerColor;
 };
-if (rawTargetList[0] !== "") {
+if (true) {
 targetEnable.checked = rawTargetService;
 targetList.value = rawTargetList;
 targetListArray = rawTargetList;
