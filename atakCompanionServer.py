@@ -76,6 +76,7 @@ tracker_color = ""
 # target details
 target_service = False
 target_list = []
+target_list_found = []
 target_list_filter = []
 [target_list_filter.append(x) for x in target_list if x not in target_list_filter]
 
@@ -99,9 +100,11 @@ if (httpd_password != None):
     httpd_password_status = True
 
 uri = f""
+uri_monitor = f""
 
 if (httpd_username is not None and httpd_password is not None):
     uri = f"ws://127.0.0.1:2501/eventbus/events.ws?user="+httpd_username+"&password="+httpd_password+""
+    uri_monitor = f"ws://127.0.0.1:2501/devices/monitor.ws?user="+httpd_username+"&password="+httpd_password+""
 
 def get_addresses(): #get network interface ips, not needed anymore until errors with get_interface_addresses arises
     local_ips = []
@@ -766,16 +769,30 @@ def handle_alert(data): #ws eventbus alerts
     trigger_target(alert_remark, alert_src)
 
 def handle_message(data): #ws eventbus messages
-    global takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
+    global target_list_found, takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
     #print("handle_message...")
-    if (target_service == True):
+    if target_service == True:
         device = data.get('kismet.messagebus.message_string')
         for target in target_list:
             if target in device:
                 print("target match from handle_message")
                 print(target)
                 trigger_target(device, target)
-                start_recording_service(target)
+                #start_recording_service(target)
+
+def handle_monitor(name, mac, lat, lon):
+    global target_list, target_service
+    #print("handle_monitor...")
+    if target_service == True:
+        for target in target_list:
+            if target in mac:
+                print("target match of device_mac from handle_monitor...")
+                remark = "Found " + mac
+                trigger_target_geo(remark, target, lat, lon)
+            if target in name:
+                print("target match of device_name from handle_monitor...")
+                remark = "Found " + name
+                trigger_target_geo(name, target, lat, lon)
 
 def handle_timestamp(data):
     global current_timestamp
@@ -816,6 +833,40 @@ def trigger_target(remarks, target): #used by kismet alerts and tak tracker
                 cot = cot_template("chat", "cot_type", "cot_color", "Kismet-Chat-takserver", "uid_chat_temporary4", remarks, random.uniform(1000, 0), current_lat, current_lon)
                 cot_send_takserver(cot)
 
+def trigger_target_geo(remarks, target, lat, lon):
+    global current_lat, current_lon, takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
+    print("trigger_target_geo")
+    if (notification_cot_service):
+        print("send notification cot")
+        if (lat != "0.0" and lon != "0.0"):
+            marker = "cot"
+            if (notification_cot_type == "a-f-G-U-C"):
+                marker = "teammate"
+            elif (notification_cot_type == "b-m-p-s-m"):
+                marker = "spot"
+            elif (notification_cot_type == "pushpin"):
+                marker = "pushpin"
+            elif (notification_cot_type == "caution"):
+                marker = "caution"
+            if (multicast_service):
+                print("send notification cot over multicast")
+                cot = cot_template(marker, notification_cot_type, notification_cot_color, target, target, remarks, target, lat, lon)
+                cot_send_multicast(cot, multicast_address, multicast_port, multicast_interface)
+            if (takserver_service):
+                print("send notification cot over takserver")
+                cot = cot_template(marker, notification_cot_type, notification_cot_color, target, target, remarks, target, lat, lon)
+                cot_send_takserver(cot)
+        if (notification_chat_service):
+            print("send notification chat")
+            if (multicast_service):
+                print("send notification chat over multicast")
+                cot = cot_template("chat", "cot_type", "cot_color", "Kismet-Chat-multicast", "uid_chat_temporary3", remarks, random.uniform(1000, 0), lat, lon)
+                cot_send_multicast(cot, multicast_address, multicast_port, multicast_interface)
+            if (takserver_service):
+                print("send notification chat over takserver")
+                cot = cot_template("chat", "cot_type", "cot_color", "Kismet-Chat-takserver", "uid_chat_temporary4", remarks, random.uniform(1000, 0), lat, lon)
+                cot_send_takserver(cot)
+
 def trigger_tracker():
     global current_lat, current_lon, takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
     print("tracker trigger")
@@ -840,6 +891,9 @@ def trigger_tracker():
                 cot_send_takserver(cot)
             time.sleep(int(tracker_rate))
 
+def target_find_mac(target):
+    print("target_find_mac...")
+
 def start_tracker_service(): #start tracker pings in threading so other code can continue to run
     tracker_thread = threading.Thread(target=trigger_tracker)
     tracker_thread.daemon = True
@@ -849,6 +903,30 @@ def start_tracker_service(): #start tracker pings in threading so other code can
 #    video_thread = threading.Thread(target=start_recording, args=(device,current_timestamp))
 #    video_thread.daemon = True
 #    video_thread.start()
+
+async def subscribe_to_ws_monitor():
+    global uri_monitor
+    print("subscribe_to_ws_monitor is running")
+    while True:
+        try:
+            async with websockets.connect(uri_monitor) as websocket:
+                subscription_message = {"monitor": "*", "request":69696, "rate":5, "fields": ["kismet.device.base.macaddr", "kismet.device.base.location/kismet.common.location.last/kismet.common.location.geopoint", "kismet.device.base.last_time", "kismet.device.base.signal", "kismet.device.base.commonname", "kismet.device.base.key", "kismet.device.base.name"],}
+                await websocket.send(json.dumps(subscription_message))
+
+                while True:
+                    data = await websocket.recv()
+                    json_data = json.loads(data)
+                    device_name = json_data.get('kismet.device.base.commonname')
+                    device_mac = json_data.get('kismet.device.base.macaddr')
+                    device_location = json_data.get('kismet.common.location.geopoint')
+                    if device_location and len(device_location) == 2:
+                        device_lat = str(json_data['kismet.common.location.geopoint'][1])
+                        device_lon = str(json_data['kismet.common.location.geopoint'][0])
+                        handle_monitor(device_name, device_mac, device_lat, device_lon)
+                    #print("Received message:", json_data)
+        except Exception as e:
+            print("WebSocket connection closed. Reconnecting ws_monitor...")
+            await asyncio.sleep(5) #reconnect to ws every 5 sec
 
 async def subscribe_to_ws():
     global uri
@@ -883,7 +961,10 @@ async def subscribe_to_ws():
 
 async def main_ws():
     while True: #while loop to attempt to reconnect to ws if disconnected
-        await subscribe_to_ws()
+        await asyncio.gather(
+            subscribe_to_ws(),
+            subscribe_to_ws_monitor(),
+        )
 
 def main_server(server_class=HTTPServer, handler_class=RequestHandler, host='', port=8000):
     server_address = (host, port)
@@ -898,3 +979,4 @@ if __name__ == '__main__':
     http_thread.start() #starts http api server
 
     asyncio.run(main_ws()) #starts websocket connection
+    #asyncio.run(monitor_ws()) #starts websocket connection
