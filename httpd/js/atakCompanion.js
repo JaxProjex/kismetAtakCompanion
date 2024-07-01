@@ -605,9 +605,14 @@ document.getElementById("alert-legend").setAttribute("style", "border:1px solid 
 function pushFileTargets() {
 targetListArrayFile = targetListStringFile.split(",");
 targetListArray.push(...targetListArrayFile);
+if (targetListArray.includes("")){
+targetListArray.splice(targetListArray.indexOf(""),1);
+};
+if (targetListArray.includes(" ")){
+targetListArray.splice(targetListArray.indexOf(" "),1);
+};
 targetList.innerHTML = "";
 targetListArray.forEach(updateTargetHtml);
-document.getElementById("test").innerHTML = targetListArrayFile;
 };
 
 function checkInitialize() {
@@ -695,7 +700,8 @@ multicastNic.innerHTML += "<option value=" + value.ip[0] + " id=" + value.interf
 };
 
 function updateTargetHtml(value) {
-if (value !== "") {
+console.log("updateTargetHtml value: " + value);
+if (value !== "" || value !== " ") {
 targetList.innerHTML += "<option value=" + value + " id=" + value + ">" + value + "</option>";
 }
 };
@@ -839,6 +845,12 @@ rawTrackerRate = data.tracker[3];
 rawTrackerCallsign = data.tracker[4];
 rawTargetService = data.target[0];
 rawTargetList = data.target[1];
+if (rawTargetList.includes("")){
+rawTargetList.splice(rawTargetList.indexOf(""),1);
+};
+if (rawTargetList.includes(" ")){
+rawTargetList.splice(rawTargetList.indexOf(" "),1);
+};
 //receiveInterfacesJson();
 multicastNic.innerHTML = "";
 localInterfaces.forEach(updateInterfaceHtml);
@@ -983,9 +995,18 @@ document.getElementById("target-legend").setAttribute("style", "border:1px solid
 };
 
 targetAddButton.onclick = function() {
+console.log("targetAdd.value " + targetAdd.value)
+if (targetAdd.value !== "" || targetAdd.value.length > 1) {
 targetListArray.push(targetAdd.value);
+if (targetListArray.includes("")){
+targetListArray.splice(targetListArray.indexOf(""),1);
+};
+if (targetListArray.includes(" ")){
+targetListArray.splice(targetListArray.indexOf(" "),1);
+};
 targetList.innerHTML = "";
 targetListArray.forEach(updateTargetHtml);
+};
 targetAdd.value = "";
 };
 
