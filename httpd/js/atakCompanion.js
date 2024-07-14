@@ -8,7 +8,7 @@ if (typeof(KISMET_URI_PREFIX) !== 'undefined')
 kismet_ui_tabpane.AddTab({
     id: 'atak-companion',
     tabTitle: 'ATAK Companion',
-    expandable: false,
+    expandable: true,
     createCallback: function(div) {
         $(document).ready(function () {
 	$(div).append(`
@@ -221,13 +221,14 @@ button {
 <div id="takserverDrop" class="dropdown-container">
 <span style="padding:10px"><label for="takserver-enable">Enable:</label><label class="enableSwitch"><input id="takserver-enable" type="checkbox"><span class="slider"></span></label></span>
 <br><br><span style="padding:10px"><label for="takserver">IP/Hostname:</label><input type="text" id="takserver" placeholder="192.168.1.69" disabled="true"></span>
-<form id="uploadForm" enctype="multipart/form-data">
+<br><br><span style="padding:10px"><label for="takserver-protocol">Protocol:</label><select name="takserver-protocol" id="takserver-protocol" disabled="true">
+<option value="https" selected>HTTPS/8089</option><option value="http">HTTP/8087</option></select></span>
+<br><br><span id="takserver-cert-service"></span>
 <br><br><span style="padding:10px"><label for="user-cert">User Pem:</label><input type="file" id="user-cert" accept=".pem" name="user_pem" disabled="true"></span>
 <br><br><span style="padding:10px"><label for="user-key">User Key:</label><input type="file" id="user-key" accept=".key" name="user_key" disabled="true"></span>
 <br><br><span style="padding:10px"><label for="takserver-password">User Key Password:</label><input type="password" id="takserver-password" placeholder="atakatak" disabled="true"></span>
 <br><br><span style="padding:10px"><label for="root-cert">CA Pem:</label><input type="file" id="root-cert" accept=".pem" name="ca_pem" disabled="true"></span>
 <br><br><span style="padding:10px"><button class="submitButton disabled" id="takserver-submit" type="button" disabled=true><b>Submit</b></button></span>
-</form>
 <br><br><span id="takserver-config"></span>
 </div>
 </fieldset>
@@ -237,9 +238,15 @@ button {
 <fieldset>
 <legend onclick="multicastDrop()" id="multicast-legend" class="dropdown-btn">Multicast Config: <i id="multicastIcon" class="fa fa-chevron-circle-right"></i></legend>
 <div id="multicastDrop" class="dropdown-container">
-<span style="padding:10px"><label for="multicast-enable">Enable:</label><label class="enableSwitch"><input id="multicast-enable" type="checkbox"><span class="slider"></span></label></span>
-<br><br><span style="padding:10px"><label for="multicast-select">Multicast Address:</label><select name="multicast-select" id="multicast-select" disabled="true">
+<span style="padding:10px"><label for="multicast-enable">Broadcast All:</label><label class="enableSwitch"><input id="multicast-enable" type="checkbox"><span class="slider"></span></label></span>
+<br><br><span style="padding:10px"><label for="multicast-select">Broadcast Address:</label><select name="multicast-select" id="multicast-select" disabled="true">
 <option value="default" selected>239.2.3.1:6969 (Default)</option><option value="sensor">239.5.5.55:7171 (Sensor)</option></select></span>
+<br><br><span style="padding:10px"><label for="udp-enable">Send To:</label><label class="enableSwitch"><input id="udp-enable" type="checkbox"><span class="slider"></span></label></span>
+<br><br><span style="padding:10px"><label for="udp-add">Add Client:</label><input id="udp-add" type="text" placeholder="192.168.1.96" disabled="true">
+<button type="button" id="udp-add-button" disabled="true">Add</button> *case sensitive</span>
+<br><br><span style="padding:10px"><label for="udp-list">Select:</label><select name="udp-list" id="udp-list" disabled="true"></select>
+<button type="button" id="udp-delete-button" disabled="true">Remove</button>
+<button type="button" id="udp-clear-button" disabled="true">Clear All</button></span>
 <br><br><span style="padding:10px"><label for="multicast-nic">Multicast NIC:</label><select name="multicast-nic" id="multicast-nic" disabled="true"></select></span>
 <br><br><span style="padding:10px"><button class="submitButton disabled" id="multicast-submit" type="button" disabled=true><b>Submit</b></button><span id="multicast-status"></span></span>
 <br><br><span id="multicast-config"></span>
@@ -249,35 +256,47 @@ button {
 
 <div style="padding:5px">
 <fieldset>
-<legend onclick="alertsDrop()" id="alert-legend" class="dropdown-btn">Alerts Config: <i id="alertsIcon" class="fa fa-chevron-circle-right"></i></legend>
+<legend onclick="alertsDrop()" id="alert-legend" class="dropdown-btn">Kismet Alerts Config: <i id="alertsIcon" class="fa fa-chevron-circle-right"></i></legend>
 <div id="alertsDrop" class="dropdown-container">
 <span style="padding:10px"><label for="notification-chat">GeoChat Enable:</label><label class="enableSwitch"><input id="notification-chat" type="checkbox"><span class="slider"></span></label></span>
-<br><br><span style="padding:10px"><label for="notification-cot">CoT Enable:</label><label class="enableSwitch"><input id="notification-cot" type="checkbox"><span class="slider"></span></label></span>
 <br><br><span style="padding:10px"><label for="alert-chat-format">GeoChat Format:</label><select name="alert-chat-format" id="alert-chat-format" disabled="true">
 <option value="standard" selected>Standard</option><option value="json">JSON</option></select></span>
+<br><br><span style="padding:10px"><label for="notification-cot">CoT Enable:</label><label class="enableSwitch"><input id="notification-cot" type="checkbox"><span class="slider"></span></label></span>
 <br><br><span style="padding:10px"><label for="alert-cot-type">CoT Type:</label><select name="alert-cot-type" id="alert-cot-type" disabled="true">
-<option value="b-m-p-s-m" selected>Spot</option><option value="pushpin">Pushpin</option><option value="caution">Caution</option><option value="a-h-G">Hostile</option><option value="a-n-G">Neutral</option></select></span>
+<option value="b-m-p-s-m">Spot</option><option value="pushpin">Pushpin</option><option value="caution" selected>Caution</option>
+<option value="a-h-G">Hostile</option><option value="a-n-G">Neutral</option></select></span>
 <br><br><span style="padding:10px"><label for="alert-cot-color">CoT Color:</label><select name="alert-cot-color" id="alert-cot-color" disabled="true">
-<option value="-16711936">Green</option><option value="-65536" selected>Red</option><option value="-16776961">Blue</option><option value="-256">Yellow</option><option value="-65281">Purple</option></select></span>
+<option value="-16711936">Green</option><option value="-65536" selected>Red</option><option value="-16776961">Blue</option>
+<option value="-256">Yellow</option><option value="-65281">Purple</option></select></span>
 <br><br><span style="padding:10px"><button class="submitButton disabled" id="notification-submit" type="button" disabled=true><b>Submit</b></button><span id="notification-status"></span></span>
-<br><br><span id="alert-config"></span>
+<br><br><span id="alert-config" style="color:red;background-color:black">*MUST enable Multicast or TAKServer Config to work*</span>
 </div>
 </fieldset>
 </div>
 
 <div style="padding:5px">
 <fieldset>
-<legend onclick="targetDrop()" id="target-legend" class="dropdown-btn">Target Config: <i id="targetIcon" class="fa fa-chevron-circle-right"></i></legend>
+<legend onclick="targetDrop()" id="target-legend" class="dropdown-btn">Kismet Targets Config: <i id="targetIcon" class="fa fa-chevron-circle-right"></i></legend>
 <div id="targetDrop" class="dropdown-container">
-<span style="padding:10px"><label for="target-enable">Enable:</label><label class="enableSwitch"><input id="target-enable" type="checkbox"><span class="slider"></span></label></span>
+<span style="padding:10px"><label for="target-enable">Target Enable:</label><label class="enableSwitch"><input id="target-enable" type="checkbox"><span class="slider"></span></label></span>
 <br><br><span style="padding:10px"><label for="target-add">Add Target:</label><input id="target-add" type="text" placeholder="XX:XX:XX:XX:XX:XX" disabled="true">
 <button type="button" id="target-add-button" disabled="true">Add</button> *case sensitive</span>
 <br><br><span style="padding:10px"><label for="file-target">Upload Targets:</label><input type="file" id="file-target" name="filename-target" accept=".txt" disabled=true></span>
 <br><br><span style="padding:10px"><label for="target-list">Select:</label><select name="target-list" id="target-list" disabled="true"></select>
 <button type="button" id="target-delete-button" disabled="true">Remove</button>
 <button type="button" id="target-clear-button" disabled="true">Clear All</button></span>
+<br><br><span style="padding:10px"><label for="target-chat">GeoChat Enable:</label><label class="enableSwitch"><input id="target-chat" type="checkbox" disabled=true><span class="slider"></span></label></span>
+<br><br><span style="padding:10px"><label for="target-chat-format">GeoChat Format:</label><select name="target-chat-format" id="target-chat-format" disabled="true">
+<option value="standard" selected>Standard</option><option value="json">JSON</option></select></span>
+<br><br><span style="padding:10px"><label for="target-cot">CoT Enable:</label><label class="enableSwitch"><input id="target-cot" type="checkbox" disabled=true><span class="slider"></span></label></span>
+<br><br><span style="padding:10px"><label for="target-cot-type">CoT Type:</label><select name="target-cot-type" id="target-cot-type" disabled="true">
+<option value="b-m-p-s-m" selected>Spot</option><option value="pushpin">Pushpin</option><option value="caution">Caution</option>
+<option value="a-h-G">Hostile</option><option value="a-n-G">Neutral</option></select></span>
+<br><br><span style="padding:10px"><label for="target-cot-color">CoT Color:</label><select name="target-cot-color" id="target-cot-color" disabled="true">
+<option value="-16711936">Green</option><option value="-65536" selected>Red</option><option value="-16776961">Blue</option>
+<option value="-256">Yellow</option><option value="-65281">Purple</option></select></span>
 <br><br><span style="padding:10px"><button class="submitButton disabled" id="target-submit" type="button" disabled=true><b>Submit</b></button><span id="target-status"></span></span>
-<br><br><span id="target-config"></span>
+<br><br><span id="target-config" style="color:red;background-color:black">*MUST enable CoT or Chat AND Multicast or TAKServer Config to work*</span>
 </div>
 </fieldset>
 </div>
@@ -294,7 +313,7 @@ button {
 <br><br><span style="padding:10px"><label for="kismet-cot-color">CoT Color:</label><select name="kismet-cot-color" id="kismet-cot-color" disabled="true">
 <option value="-16711936">Green</option><option value="-16711681" selected>Cyan</option><option value="-65536">Red</option><option value="-16776961">Blue</option><option value="-256">Yellow</option><option value="-65281">Purple</option></select></span>
 <br><br><span style="padding:10px"><button class="submitButton disabled" id="tracker-submit" type="button" disabled=true><b>Submit</b></button><span id="tracker-status"></span></span>
-<br><br><span id="tracker-config"></span>
+<br><br><span id="tracker-config" style="color:red;background-color:black">*MUST enable Multicast or TAKServer Config to work*</span>
 </div>
 </fieldset>
 </div>
@@ -306,10 +325,10 @@ button {
 
 <h3><u>Notes</u></h3>
 <ul>
-<li>Kismet should not run as root, this plugin will break kismet and explode. This means to NOT run "sudo" when starting kismet.</li>
+<li>Kismet should not run as root, this plugin will break kismet and explode. This means to NOT run "sudo" when starting kismet, or to start kismet.</li>
 <li>GPS data is pulled from Kismets API so any GPS you provide Kismet (GPSD, virtual, serial) in kismet.conf will be used for ATAK Companion.</li>
 <li>Configurations for receiving CoT with kismet could be as follows: USB tether to ATAK, Cellular Modem/SixFab Cellular Hat, creating a WiFi AP over the RPi onboard WiFi interface, 
-Etherneting the RPi to ATAK directly. Bluetooth has the potential to be an option for future updates. A lot of the network configuration portion 
+Etherneting the RPi to ATAK directly. Bluetooth has the potential to be an option for future updates. A lot of the network configuration portion
  will likely need to be handled in the /etc/network/interfaces file for setting up USB tethering, Ethernet direct, and WiFi AP.</li>
 <li>The assumption for the ATAK Companion Plugin is that kismet is NOT being run as root, the atakCompanion directory is added to the ~/.kismet/plugins folder after running "make install" 
  and that its on a Linux OS, only Raspbian has been tested.</li>
@@ -332,7 +351,7 @@ Etherneting the RPi to ATAK directly. Bluetooth has the potential to be an optio
 <h3><u>TAKServer</u></h3>
 <ul>
 <li>Do NOT include the port number in the server IP/Hostname input, if all 3 certs are uploaded it will default to port 8089, if no certs are uploaded it will default to 8087.</li>
-<li>TAKSserver user.pem, user.key, and ca.pem certs can be found in your TAKServers cert directory.</li>
+<li>TAKServer user.pem, user.key, and ca.pem certs can be found in your TAKServers cert directory.</li>
 <li>The default TAKServer key password is "atakatak" unless it has been changed by the TAKServer administrator.</li>
 <li>It is recommended to have TAKServer create a new user cert for the ATAK Companion connection as to not conflict with multiple TAK devices using the same TAK user credentials.</li>
 <li>If there is a need to handle TAKServer authentication other ways or for TAKServer ports to be a custom input field, I will add it on request.</li>
@@ -345,7 +364,7 @@ Etherneting the RPi to ATAK directly. Bluetooth has the potential to be an optio
 <li>VPN interfaces are commonly tun0, Zerotier interfaces are commonly ztxxxx, USB tether interfaces are commonly usb0, WiFi APs are commonly wlan. Ensure you are not multicasting CoT on a WiFi interface that will end up in monitor mode for kismet!</li>
 </ul>
 
-<h3><u>Alerts/Notifications</u></h3>
+<h3><u>Kismet Alerts</u></h3>
 <ul>
 <li>Enabling GeoChat will have Kismet Alerts sent to TAK devices as a TAK chat message.</li>
 <li>Enabling CoT will have Kismet Alerts sent to TAK devices to plot on TAK map. This is mostly for target MAC Addresses/SSIDs during wardriving that have location data attached to their Alert message.</li>
@@ -355,19 +374,22 @@ Etherneting the RPi to ATAK directly. Bluetooth has the potential to be an optio
 <li>Ensure a messaging protocol is setup to send CoT over, either multicast or TAKServer.</li>
 </ul>
 
-<h3><u>Targets</u></h3>
+<h3><u>Kismet Targets</u></h3>
 <ul>
-<li>Targets now persist and are saved with the rest of config settings in atakCompanionConfig.ini file</li>
-<li>Targets do NOT get added to kismets /etc/kismet/kismet_alerts.conf file, they are just filtered from the message bus of detected devices and are not actual kismet alerts.</li>
-<li>If you want kismet targets to persist you should add them in /etc/kismet/kismet_alerts.conf file where they will be handled as a Kismet Alert.</li>
-<li>Alert CoT/Chat service should be enabled if you want to receive CoT/Chat messages over TAK when these targets are detected!</li>
-<li>Target List files uploaded should be .txt files with targets seperated by commas with NO spaces. ie: ssid1,ssid2,mac1,mac2</li>
-<li>Make sure to click Submit after adding/uploading targets to persist saved changes across browser refreshes!</li>
+<li>click the submit button after any changes made!</li>
+<li>MAC Addresses need to be in all caps!!! ie: A1:B2:C3:D4:E5:F6, not a1:b2:c3:d4:e5:f6</li>
+<li>Target list persists across browser refreshes, kismet restarts and power reboots.</li>
+<li>Targets do NOT get added to kismets /etc/kismet/kismet_alerts.conf file, they are just filtered from the message bus and monitor websocket of detected devices and are not actual "kismet alerts".</li>
+<li>If you want kismet targets to be treated as a "kismet alert" you should add them in /etc/kismet/kismet_alerts.conf file where they will be handled as such.</li>
+<li>Alert Config: CoT or Chat service needs to be enabled if you want to receive CoT/Chat messages over TAK when these targets are detected!</li>
+<li>Target List files uploaded should be .txt files with targets seperated by commas (with no spaces). ie: SSID1wifi,ssid2WIFI,A1:B1:C1:D1:E1:F1,2A:2B:2C:2D:2E:2F</li>
+<li>Make sure to click Submit after adding/uploading targets!</li>
 </ul>
 
 <h3><u>TAK Tracker</u></h3>
 <ul>
-<li>TAK Callsign is the name the device gets populated as on TAK map. TAK Callsign should not include spaces, or only have numbers!</li>
+<li>TAK Callsign is the name the device gets populated as on TAK map.</li>
+<li>TAK Callsign SHOULD NOT include spaces, and SHOULD NOT only be numbers!</li>
 <li>Ping rate is in seconds of how often the tracker gets refreshed on the TAK map</li>
 <li>CoT Type is the marker/icon used.</li>
 <li>TAK Tracker service does NOT continue running when kismet service is stopped</li>
@@ -377,16 +399,17 @@ Etherneting the RPi to ATAK directly. Bluetooth has the potential to be an optio
 </div>
 </fieldset>
 </div>
-<p id="test">Error: no javascript functions</p> 
+<p id="test">Error: no javascript functions</p>
 </div>
 
 <script type="text/javascript">
 
-document.getElementById("test").innerHTML = "";
+document.getElementById("test").innerHTML = ""; //used to check that our js code is being referenced
 
 var takserverEnable = document.getElementById("takserver-enable");
 var takserver = document.getElementById("takserver");
 var takserverPassword = document.getElementById("takserver-password");
+var takserverProtocol = document.getElementById("takserver-protocol");
 var userCert = document.getElementById("user-cert");
 var userKey = document.getElementById("user-key");
 var rootCert = document.getElementById("root-cert");
@@ -396,6 +419,12 @@ var multicastEnable = document.getElementById("multicast-enable");
 var multicastSelect = document.getElementById("multicast-select");
 var multicastNic = document.getElementById("multicast-nic");
 var multicastSubmit = document.getElementById("multicast-submit");
+var udpEnable = document.getElementById("udp-enable");
+var udpAdd = document.getElementById("udp-add");
+var udpAddButton = document.getElementById("udp-add-button");
+var udpList = document.getElementById("udp-list");
+var udpDeleteButton = document.getElementById("udp-delete-button");
+var udpClearButton = document.getElementById("udp-clear-button");
 
 var notificationChat = document.getElementById("notification-chat");
 var notificationCot = document.getElementById("notification-cot");
@@ -420,6 +449,17 @@ var targetDeleteButton = document.getElementById("target-delete-button");
 var targetClearButton = document.getElementById("target-clear-button");
 var targetSubmit = document.getElementById("target-submit");
 
+var targetChat = document.getElementById("target-chat");
+var targetCot = document.getElementById("target-cot");
+var targetCotType = document.getElementById("target-cot-type");
+var targetCotColor = document.getElementById("target-cot-color");
+var targetChatFormat = document.getElementById("target-chat-format");
+
+
+const apiToken = "thecakeisalie"
+
+var udpListArray = [];
+
 var targetListArray = [];
 var targetListArrayFile = [];
 var targetListStringFile;
@@ -427,11 +467,15 @@ var targetListStringFile;
 var localInterfaces = [];
 
 var takserverStatus;
+var takserverCertStatus;
 var multicastStatus;
+var udpStatus;
 var notificationCotStatus;
 var notificationChatStatus;
 var targetStatus;
 var trackerStatus;
+var targetCotStatus;
+var targetChatStatus;
 
 var rawHttpdUser;
 var rawHttpdPassword;
@@ -439,10 +483,18 @@ var rawHttpdPassword;
 var rawTakserverService;
 var rawTakserverAddress;
 var rawTakserverPassword;
+var rawTakserverUserCert;
+var rawTakserverUserKey;
+var rawTakserverRootCert;
+var rawTakserverProtocol;
+var rawTakserverCertError;
+var rawTakserverCertService;
 
 var rawMulticastService;
 var rawMulticastSelect;
 var rawMulticastInterface;
+var rawUdpService;
+var rawUdpList = [];
 
 var rawNotificationChatService;
 var rawNotificationChatFormat;
@@ -458,6 +510,13 @@ var rawTrackerCallsign;
 
 var rawTargetService;
 var rawTargetList = [];
+
+var rawTargetChatService;
+var rawTargetChatFormat;
+var rawTargetCotService;
+var rawTargetCotType;
+var rawTargetCotColor;
+
 
 var currentHostname = window.location.hostname;
 var currentIp;
@@ -476,8 +535,12 @@ function uploadFiles() {
     formData2.append('user_key', userKeyFile);
     formData3.append('ca_pem', caPemFile);
 
+if (userCert.files.value !== 0) {
     fetch('http://'+currentHostname+':8000/uploadUserPem', {
         method: 'POST',
+        headers: {
+        'Authorization': 'Bearer ' + apiToken
+        },
         body: formData1
     })
     .then(response => {
@@ -490,8 +553,14 @@ function uploadFiles() {
     .catch(error => {
         console.error('Error uploading files:', error);
     });
+}
+
+if (userKey.files.value !== 0) {
     fetch('http://'+currentHostname+':8000/uploadUserKey', {
         method: 'POST',
+        headers: {
+        'Authorization': 'Bearer ' + apiToken
+        },
         body: formData2
     })
     .then(response => {
@@ -504,8 +573,14 @@ function uploadFiles() {
     .catch(error => {
         console.error('Error uploading files:', error);
     });
+}
+
+if (rootCert.files.value !== 0) {
     fetch('http://'+currentHostname+':8000/uploadCaPem', {
         method: 'POST',
+        headers: {
+        'Authorization': 'Bearer ' + apiToken
+        },
         body: formData3
     })
     .then(response => {
@@ -519,29 +594,48 @@ function uploadFiles() {
         console.error('Error uploading files:', error);
     });
 }
+}
 
 
 function matchValues() {
 takserverStatus = rawTakserverService;
+takserverCertStatus = rawTakserverCertService;
 multicastStatus = rawMulticastService;
+udpStatus = rawUdpService;
+udpListArray = rawUdpList;
 notificationCotStatus = rawNotificationCotService;
 notificationChatStatus = rawNotificationChatService;
+targetCotStatus = rawTargetCotService;
+targetChatStatus = rawTargetChatService;
 targetStatus = rawTargetService;
 trackerStatus = rawTrackerService;
 targetListArray = rawTargetList;
 }
 
+
 function checkDisabled() {
 if (takserverEnable.checked === true) {
 takserver.disabled = false;
-takserverPassword.disabled = false;
+takserverProtocol.disabled = false;
+takserverSubmit.disabled = false;
+}
+if (takserverProtocol.value === "https") {
 userCert.disabled = false;
 userKey.disabled = false;
 rootCert.disabled = false;
-takserverSubmit.disabled = false;
+takserverPassword.disabled = false;
 }
 if (multicastEnable.checked === true) {
+multicastNic.disabled = false;
+multicastSubmit.disabled = false;
 multicastSelect.disabled = false;
+}
+if (udpEnable.checked) {
+udpAdd.disabled = false;
+udpAddButton.disabled = false;
+udpList.disabled = false;
+udpDeleteButton.disabled = false;
+udpClearButton.disabled = false;
 multicastNic.disabled = false;
 multicastSubmit.disabled = false;
 }
@@ -564,6 +658,8 @@ trackerSubmit.disabled = false;
 kismetCotColor.disabled = false;
 }}
 if (targetEnable.checked === true) {
+targetChat.disabled = false;
+targetCot.disabled = false;
 targetAdd.disabled = false;
 targetAddButton.disabled = false;
 targetFile.disabled = false;
@@ -571,32 +667,54 @@ targetList.disabled = false;
 targetDeleteButton.disabled = false;
 targetClearButton.disabled = false;
 targetSubmit.disabled = false;
+if (targetChat.checked === true) {
+targetChatFormat.disabled = false;
+}
+if (targetCot.checked === true) {
+targetCotType.disabled = false;
+if (targetCotType.value === "b-m-p-s-m" || targetCotType.value === "a-f-G-U-C" || targetCotType.value === "pushpin") {
+targetCotColor.disabled = false;
+}}
 }
 };
 
 function checkActive() {
-if (takserverStatus === true) {
+if (takserverStatus === true && rawTakserverCertError === false) {
 document.getElementById("takserver-legend").setAttribute("style", "border:1px solid MediumSeaGreen")
+} else if (takserverStatus === true && rawTakserverCertError === true) {
+document.getElementById("takserver-legend").setAttribute("style", "border:1px solid red")
 } else {
 document.getElementById("takserver-legend").setAttribute("style", "border:1px solid white")
 }
-if (multicastStatus === true) {
+if (multicastStatus === true || udpStatus === true) {
 document.getElementById("multicast-legend").setAttribute("style", "border:1px solid MediumSeaGreen")
 } else {
 document.getElementById("multicast-legend").setAttribute("style", "border:1px solid white")
 }
-if (trackerStatus === true) {
+if (trackerStatus === true && ((takserverStatus === true && rawTakserverCertError === false) || (multicastStatus === true || udpStatus === true))) {
 document.getElementById("tracker-legend").setAttribute("style", "border:1px solid MediumSeaGreen")
+document.getElementById("tracker-config").innerHTML = "";
+} else if (trackerStatus === true) {
+document.getElementById("tracker-legend").setAttribute("style", "border:1px solid red")
+document.getElementById("tracker-config").innerHTML = "*MUST enable Multicast or TAKServer Config to work*"
 } else {
 document.getElementById("tracker-legend").setAttribute("style", "border:1px solid white")
 }
-if (targetStatus === true) {
+if (targetStatus === true && (targetCotStatus === true || targetChatStatus === true) && ((takserverStatus === true && rawTakserverCertError === false) || (multicastStatus === true || udpStatus === true))) {
 document.getElementById("target-legend").setAttribute("style", "border:1px solid MediumSeaGreen")
+document.getElementById("target-config").innerHTML = "";
+} else if (targetStatus === true) {
+document.getElementById("target-legend").setAttribute("style", "border:1px solid red")
+document.getElementById("target-config").innerHTML = "*MUST enable CoT or Chat AND Multicast or TAKServer Config to work*"
 } else {
 document.getElementById("target-legend").setAttribute("style", "border:1px solid white")
 }
-if (notificationCotStatus === true || notificationChatStatus === true) {
+if ((notificationCotStatus === true || notificationChatStatus === true) && ((takserverStatus === true && rawTakserverCertError === false) || (multicastStatus === true || udpStatus === true))) {
 document.getElementById("alert-legend").setAttribute("style", "border:1px solid MediumSeaGreen")
+document.getElementById("alert-config").innerHTML = "";
+} else if (notificationCotStatus === true || notificationChatStatus === true) {
+document.getElementById("alert-legend").setAttribute("style", "border:1px solid red")
+document.getElementById("alert-config").innerHTML = "*MUST enable Multicast or TAKServer Config to work*"
 } else {
 document.getElementById("alert-legend").setAttribute("style", "border:1px solid white")
 }
@@ -612,7 +730,9 @@ if (targetListArray.includes(" ")){
 targetListArray.splice(targetListArray.indexOf(" "),1);
 };
 targetList.innerHTML = "";
+targetListArray.forEach(updateTargetMac);
 targetListArray.forEach(updateTargetHtml);
+parametersTarget(targetListArray, targetEnable.checked);
 };
 
 function checkInitialize() {
@@ -635,6 +755,18 @@ document.getElementById("initialize-legend").setAttribute("onclick", "");
 };
 };
 
+function checkTakserverCerts() {
+if (takserverCertStatus === true && rawTakserverCertService === true && takserverProtocol.value === "https") {
+document.getElementById("takserver-cert-service").setAttribute("style", "color:green;background-color:black");
+document.getElementById("takserver-cert-service").innerHTML = "TAK Certs Uploaded!";
+} else if (takserverProtocol.value === "https") {
+document.getElementById("takserver-cert-service").setAttribute("style", "color:red;background-color:black");
+document.getElementById("takserver-cert-service").innerHTML = "TAK Certs Required for HTTPS/8089...";
+} else {
+document.getElementById("takserver-cert-service").setAttribute("style", "color:white;background-color:black");
+document.getElementById("takserver-cert-service").innerHTML = "TAK Certs NOT Required for HTTP/8087...";
+}
+};
 
 function initializeDrop() {
 document.getElementById("initializeDrop").classList.toggle("show");
@@ -700,9 +832,20 @@ multicastNic.innerHTML += "<option value=" + value.ip[0] + " id=" + value.interf
 };
 
 function updateTargetHtml(value) {
-console.log("updateTargetHtml value: " + value);
 if (value !== "" || value !== " ") {
 targetList.innerHTML += "<option value=" + value + " id=" + value + ">" + value + "</option>";
+}
+};
+
+function updateUdpHtml(value) {
+if (value !== "" || value !== " ") {
+udpList.innerHTML += "<option value=" + value + " id=" + value + ">" + value + "</option>";
+}
+};
+
+function updateTargetMac(value, index, array) {
+if (value.length >= 17 && value.split(":").length === 6) {
+array[index] = value.toUpperCase()
 }
 };
 
@@ -710,18 +853,24 @@ function persistData() {
 if (rawTakserverService === true || rawTakserverAddress !== "") {
 takserverEnable.checked = rawTakserverService;
 takserver.value = rawTakserverAddress;
-takserverPassword.value = rawTakserverPassword;
+//takserverPassword.value = rawTakserverPassword;
+takserverProtocol.value = rawTakserverProtocol;
 };
-if (rawMulticastService === true || (rawMulticastSelect !== "" && rawMulticastInterface !== "")) {
+if ((rawMulticastService === true || rawUdpService === true) || (rawMulticastSelect !== "" && rawMulticastInterface !== "")) {
 multicastEnable.checked = rawMulticastService;
 multicastSelect.value = rawMulticastSelect;
 multicastNic.value = rawMulticastInterface;
+udpEnable.checked = rawUdpService;
+udpList.value = rawUdpList;
+udpListArray = rawUdpList;
+udpList.innerHTML = "";
+udpListArray.forEach(updateUdpHtml);
 };
 if (rawNotificationChatService === true || rawNotificationChatFormat !== "") {
 notificationChat.checked = rawNotificationChatService;
 alertChatFormat.value = rawNotificationChatFormat;
 };
-if (rawNotificationCotService === true || (rawNotificationCotType !== "" && rawNotificationCotColor!== "")) {
+if (rawNotificationCotService === true || (rawNotificationCotType !== "" && rawNotificationCotColor !== "")) {
 notificationCot.checked = rawNotificationCotService;
 alertCotType.value = rawNotificationCotType;
 alertCotColor.value = rawNotificationCotColor;
@@ -737,7 +886,17 @@ if (true) {
 targetEnable.checked = rawTargetService;
 targetList.value = rawTargetList;
 targetListArray = rawTargetList;
+targetList.innerHTML = "";
 targetListArray.forEach(updateTargetHtml);
+};
+if (rawTargetChatService === true || rawTargetChatFormat !== "") {
+targetChat.checked = rawTargetChatService;
+targetChatFormat.value = rawTargetChatFormat;
+};
+if (rawTargetCotService === true || (rawTargetCotType !== "" && rawTargetCotColor !== "")) {
+targetCot.checked = rawTargetCotService;
+targetCotType.value = rawTargetCotType;
+targetCotColor.value = rawTargetCotColor;
 };
 };
 
@@ -746,6 +905,7 @@ function forwardJson(data) {
 fetch('http://'+currentHostname+':8000/config', {
 method: 'POST',
 headers: {
+'Authorization': 'Bearer ' + apiToken,
 'Content-Type': 'application/json'
 },
 body: JSON.stringify(data)
@@ -771,8 +931,8 @@ const obj = {id: "takserver", url: urlInput, key: passphrase, proto: protocol, s
 forwardJson(obj)
 };
 
-function parametersMulticast(address, iface, status) {
-const obj = {id: "multicast", udp: address, net: iface, service: status}; 
+function parametersMulticast(address, iface, status, list, send) {
+const obj = {id: "multicast", udp: address, net: iface, service: status, clients: list, multicast: send};
 forwardJson(obj)
 };
 
@@ -796,9 +956,25 @@ const obj = {id: "target", targets: list, service: status};
 forwardJson(obj);
 };
 
+function parametersTargetCot(type, color, status) {
+const obj = {id: "target-cot", cot: type, rgb: color, service: status};
+forwardJson(obj)
+};
+
+function parametersTargetChat(format, status) {
+const obj = {id: "target-chat", type: format, service: status};
+forwardJson(obj)
+};
+
 //receive local interfaces
 function receiveInterfacesJson() {
-fetch('http://'+currentHostname+':8000/interfaces')
+fetch('http://'+currentHostname+':8000/interfaces', {
+method: 'GET',
+headers: {
+'Authorization': 'Bearer ' + apiToken,
+'Content-Type': 'application/json'
+}
+})
 .then(response => {
 if (!response.ok) {
 throw new Error('Network response was not ok');
@@ -817,7 +993,13 @@ console.error('Error fetching data:', error);
 
 //receive persistent global variables from backend
 function receivePersistJson() {
-fetch('http://'+currentHostname+':8000/persist')
+fetch('http://'+currentHostname+':8000/persist', {
+method: 'GET',
+headers: {
+'Authorization': 'Bearer ' + apiToken,
+'Content-Type': 'application/json'
+}
+})
 .then(response => {
 if (!response.ok) {
 throw new Error('Network response was not ok');
@@ -830,9 +1012,14 @@ rawHttpdUser = data.initialize[0];
 rawHttpdPassword = data.initialize[1];
 rawTakserverService = data.takserver[0];
 rawTakserverAddress = data.takserver[1];
+rawTakserverProtocol = data.takserver[2];
+rawTakserverCertError = data.takserver[3];
+rawTakserverCertService = data.takserver[4];
 rawMulticastService = data.multicast[0];
 rawMulticastSelect = data.multicast[1];
 rawMulticastInterface = data.multicast[2];
+rawUdpService = data.multicast[3];
+rawUdpList = data.multicast[4];
 rawNotificationChatService = data.notificationChat[0];
 rawNotificationChatFormat = data.notificationChat[1];
 rawNotificationCotService = data.notificationCot[0];
@@ -845,6 +1032,11 @@ rawTrackerRate = data.tracker[3];
 rawTrackerCallsign = data.tracker[4];
 rawTargetService = data.target[0];
 rawTargetList = data.target[1];
+rawTargetChatService = data.targetChat[0];
+rawTargetChatFormat = data.targetChat[1];
+rawTargetCotService = data.targetCot[0];
+rawTargetCotType = data.targetCot[1];
+rawTargetCotColor = data.targetCot[2];
 if (rawTargetList.includes("")){
 rawTargetList.splice(rawTargetList.indexOf(""),1);
 };
@@ -852,55 +1044,139 @@ if (rawTargetList.includes(" ")){
 rawTargetList.splice(rawTargetList.indexOf(" "),1);
 };
 //receiveInterfacesJson();
-multicastNic.innerHTML = "";
-localInterfaces.forEach(updateInterfaceHtml);
-persistData();
-checkInitialize();
-matchValues();
-checkActive();
-checkDisabled();
+multicastNic.innerHTML = ""; //clear out html interfaces so there arent repeats when they get added
+localInterfaces.forEach(updateInterfaceHtml); //display available nic interfaces for user to select
+persistData(); //global variables equal raw variables
+checkInitialize(); //check user/pass grabbed from kismet_httpd.conf
+matchValues(); //match global service/status booleans to raw
+checkActive(); //sets field border color based on conditions
+checkDisabled(); //disabled input fields if services/configs arent enabled
+checkTakserverCerts(); //checks if tak certs have been uploaded and present
 })
 .catch(error => {
 console.error('Error fetching data:', error);
 });
 };
 
-//callback functions end
+//callback functions end-----------------------------------------------
 
 takserverEnable.onclick = function() {
 if (takserverEnable.checked === true) {
 takserver.disabled = false;
-takserverPassword.disabled = false;
+takserverSubmit.disabled = false;
+takserverProtocol.disabled = false;
+if (takserverProtocol.value === "https") {
 userCert.disabled = false;
 userKey.disabled = false;
 rootCert.disabled = false;
-takserverSubmit.disabled = false;
+takserverPassword.disabled = false;
+}
 } else {
+takserverStatus = false;
 takserver.disabled = true;
 takserverPassword.disabled = true;
+takserverProtocol.disabled = true;
 userCert.disabled = true;
 userKey.disabled = true;
 rootCert.disabled = true;
 takserverSubmit.disabled = true;
-parametersTakserver("","","",false);
-document.getElementById("takserver-legend").setAttribute("style", "border:1px solid white")
+parametersTakserver("","","",false,"");
+document.getElementById("takserver-legend").setAttribute("style", "border:1px solid white");
 }
+checkActive();
+};
+
+takserverProtocol.onchange = function() {
+if (takserverProtocol.value === "https") {
+userCert.disabled = false;
+userKey.disabled = false;
+rootCert.disabled = false;
+takserverPassword.disabled = false;
+} else {
+userCert.disabled = true;
+userKey.disabled = true;
+rootCert.disabled = true;
+takserverPassword.disabled = true;
+}
+checkTakserverCerts();
 };
 
 multicastEnable.onclick = function() {
 if (multicastEnable.checked === true) {
-multicastSelect.disabled = false;
 multicastNic.disabled = false;
 multicastSubmit.disabled = false;
-//receiveInterfacesJson();
-//localInterfaces.forEach(updateInterfaceHtml);
+multicastSelect.disabled = false;
 } else {
+multicastStatus = false;
 multicastSelect.disabled = true;
+parametersMulticast("","",false,udpListArray,"");
+}
+if (udpEnable.checked === false && multicastEnable.checked === false) {
 multicastNic.disabled = true;
 multicastSubmit.disabled = true;
-parametersMulticast("","",false);
-document.getElementById("multicast-legend").setAttribute("style", "border:1px solid white")
+multicastSelect.disabled = true;
+document.getElementById("multicast-legend").setAttribute("style", "border:1px solid white");
 }
+checkActive();
+};
+
+udpEnable.onclick = function() {
+if (udpEnable.checked === true) {
+multicastNic.disabled = false;
+multicastSubmit.disabled = false;
+udpAdd.disabled = false;
+udpAddButton.disabled = false;
+udpList.disabled = false;
+udpDeleteButton.disabled = false;
+udpClearButton.disabled = false;
+} else {
+udpStatus = false;
+udpAdd.disabled = true;
+udpAddButton.disabled = true;
+udpList.disabled = true;
+udpDeleteButton.disabled = true;
+udpClearButton.disabled = true;
+parametersMulticast("","",multicastEnable.checked,udpListArray,false);
+}
+if (udpEnable.checked === false && multicastEnable.checked === false) {
+multicastNic.disabled = true;
+multicastSubmit.disabled = true;
+multicastSelect.disabled = true;
+document.getElementById("multicast-legend").setAttribute("style", "border:1px solid white");
+}
+checkActive();
+};
+
+udpAddButton.onclick = function() {
+//console.log("udpAdd.value " + udpAdd.value)
+if (udpAdd.value !== "" || udpAdd.value.length > 1) {
+udpListArray.push(udpAdd.value);
+if (udpListArray.includes("")) {
+udpListArray.splice(udpListArray.indexOf(""),1);
+};
+if (udpListArray.includes(" ")){
+udpListArray.splice(udpListArray.indexOf(" "),1);
+};
+udpList.innerHTML = "";
+udpListArray.forEach(updateUdpHtml);
+};
+udpAdd.value = "";
+};
+
+udpDeleteButton.onclick = function() {
+if (udpList.selectedIndex !== -1) {
+udpListArray.splice(udpList.selectedIndex, 1);
+udpList.innerHTML = "";
+udpListArray.forEach(updateUdpHtml);
+udpAdd.value = "";
+}
+};
+
+udpClearButton.onclick = function() {
+udpListArray = [];
+udpList.innerHTML = "";
+udpListArray.forEach(updateUdpHtml);
+udpAdd.value = "";
 };
 
 notificationChat.onclick = function() {
@@ -908,11 +1184,13 @@ if (notificationChat.checked === true) {
 alertChatFormat.disabled = false;
 notificationSubmit.disabled = false;
 } else if (notificationCot.checked === false && notificationChat.checked === false) {
+notificationChatStatus = false;
 notificationSubmit.disabled = true;
 alertChatFormat.disabled = true;
 parametersNotificationChat("",false);
-document.getElementById("alert-legend").setAttribute("style", "border:1px solid white")
+document.getElementById("alert-legend").setAttribute("style", "border:1px solid white");
 } else {
+notificationChatStatus = false;
 alertChatFormat.disabled = true;
 parametersNotificationChat("",false);
 }
@@ -925,12 +1203,14 @@ notificationSubmit.disabled = false;
 if (alertCotType.value === "b-m-p-s-m" || alertCotType.value === "a-f-G-U-C" || alertCotType.value === "pushpin") {
 alertCotColor.disabled = false;
 }} else if (notificationCot.checked === false && notificationChat.checked === false) {
+notificationCotStatus = false;
 notificationSubmit.disabled = true;
 alertCotType.disabled = true;
 alertCotColor.disabled = true;
 parametersNotificationCot("","",false);
-document.getElementById("alert-legend").setAttribute("style", "border:1px solid white")
+document.getElementById("alert-legend").setAttribute("style", "border:1px solid white");
 } else {
+notificationCotStatus = false;
 alertCotType.disabled = true;
 alertCotColor.disabled = true;
 parametersNotificationCot("","",false);
@@ -954,6 +1234,7 @@ kismetCotType.disabled = false;
 if (kismetCotType.value === "b-m-p-s-m" || kismetCotType.value === "a-f-G-U-C" || kismetCotType.value === "pushpin") {
 kismetCotColor.disabled = false;
 }} else {
+trackerStatus = false;
 trackerRate.disabled = true;
 trackerCallsign.disabled = true;
 kismetCotType.disabled = true;
@@ -974,6 +1255,8 @@ kismetCotColor.disabled = true;
 
 targetEnable.onclick = function() {
 if (targetEnable.checked === true) {
+targetChat.disabled = false;
+targetCot.disabled = false;
 targetAdd.disabled = false;
 targetFile.disabled = false;
 targetAddButton.disabled = false;
@@ -981,7 +1264,18 @@ targetList.disabled = false;
 targetDeleteButton.disabled = false;
 targetClearButton.disabled = false;
 targetSubmit.disabled = false;
+if (targetChat.checked === true) {
+targetChatFormat.disabled = false;
+if (targetCot.checked === true) {
+targetCotType.disabled = false;
+if (targetCotType.value === "b-m-p-s-m" || targetCotType.value === "a-f-G-U-C" || targetCotType.value === "pushpin") {
+targetCotColor.disabled = false;
+}}
+}
 } else {
+targetStatus = false;
+targetChat.disabled = true;
+targetCot.disabled = true;
 targetAdd.disabled = true;
 targetFile.disabled = true;
 targetAddButton.disabled = true;
@@ -989,32 +1283,81 @@ targetList.disabled = true;
 targetDeleteButton.disabled = true;
 targetClearButton.disabled = true;
 targetSubmit.disabled = true;
+targetChatFormat.disabled = true;
+targetCotType.disabled = true;
+targetCotColor.disabled = true;
 parametersTarget(targetListArray,false);
 document.getElementById("target-legend").setAttribute("style", "border:1px solid white")
 }
 };
 
+targetChat.onclick = function() {
+if (targetChat.checked === true) {
+targetChatFormat.disabled = false;
+} else if (targetCot.checked === false && targetChat.checked === false) {
+targetChatStatus = false;
+targetChatFormat.disabled = true;
+parametersTargetChat("",false);
+} else {
+targetChatStatus = false;
+targetChatFormat.disabled = true;
+parametersTargetChat("",false);
+}
+checkActive();
+};
+
+targetCot.onclick = function() {
+if (targetCot.checked === true) {
+targetCotType.disabled = false;
+if (targetCotType.value === "b-m-p-s-m" || targetCotType.value === "a-f-G-U-C" || targetCotType.value === "pushpin") {
+targetCotColor.disabled = false;
+}} else if (targetCot.checked === false && targetChat.checked === false) {
+targetCotStatus = false;
+targetCotType.disabled = true;
+targetCotColor.disabled = true;
+parametersTargetCot("","",false);
+} else {
+targetCotStatus = false;
+targetCotType.disabled = true;
+targetCotColor.disabled = true;
+parametersTargetCot("","",false);
+}
+checkActive();
+};
+
+targetCotType.onchange = function() {
+if (targetCotType.value === "b-m-p-s-m" || targetCotType.value === "a-f-G-U-C" || targetCotType.value === "pushpin") {
+targetCotColor.disabled = false;
+} else {
+targetCotColor.disabled = true;
+}
+};
+
 targetAddButton.onclick = function() {
-console.log("targetAdd.value " + targetAdd.value)
+//console.log("targetAdd.value " + targetAdd.value)
 if (targetAdd.value !== "" || targetAdd.value.length > 1) {
 targetListArray.push(targetAdd.value);
-if (targetListArray.includes("")){
+if (targetListArray.includes("")) {
 targetListArray.splice(targetListArray.indexOf(""),1);
 };
-if (targetListArray.includes(" ")){
+if (targetListArray.includes(" ")) {
 targetListArray.splice(targetListArray.indexOf(" "),1);
 };
 targetList.innerHTML = "";
+targetListArray.forEach(updateTargetMac);
 targetListArray.forEach(updateTargetHtml);
+parametersTarget(targetListArray, targetEnable.checked);
 };
 targetAdd.value = "";
 };
 
 targetDeleteButton.onclick = function() {
-targetListArray.splice(targetListArray.indexOf(targetList.value), 1);
+if (targetList.selectedIndex !== -1) {
+targetListArray.splice(targetList.selectedIndex, 1);
 targetList.innerHTML = "";
 targetListArray.forEach(updateTargetHtml);
 targetAdd.value = "";
+}
 };
 
 targetClearButton.onclick = function() {
@@ -1038,42 +1381,68 @@ checkInitialize();
 
 takserverSubmit.onclick = function() {
 takserverStatus = true;
-var protocol = "https";
-if (userCert.value === "" && userKey.value === "" && rootCert.value === "") {
-protocol = "http";
-};
 document.getElementById("takserver-legend").setAttribute("style", "border:1px solid MediumSeaGreen")
-parametersTakserver(takserver.value, takserverPassword.value, protocol, takserverEnable.checked);
 if (userCert.value !== "" && userKey.value !== "" && rootCert.value !== "" && takserverPassword.value !== "") {
 uploadFiles()
 };
+parametersTakserver(takserver.value, takserverPassword.value, takserverProtocol.value, takserverEnable.checked);
+setTimeout(receivePersistJson, 1000);
 };
 
 multicastSubmit.onclick = function() {
+if (multicastEnable.checked === true) {
 multicastStatus = true;
+}
+if (udpEnable.checked === true) {
+udpStatus = true;
+}
 document.getElementById("multicast-legend").setAttribute("style", "border:1px solid MediumSeaGreen")
-parametersMulticast(multicastSelect.value, multicastNic.value, multicastEnable.checked)
+parametersMulticast(multicastSelect.value, multicastNic.value, multicastEnable.checked, udpListArray, udpEnable.checked)
+checkActive();
 };
 
 notificationSubmit.onclick = function() {
 if (notificationCot.checked) { notificationCotStatus = true;};
 if (notificationChat.checked) { notificationChatStatus = true;};
+if ((takserverStatus === true && rawTakserverCertError === false) || (multicastStatus === true || udpStatus === true)) {
 document.getElementById("alert-legend").setAttribute("style", "border:1px solid MediumSeaGreen")
+document.getElementById("alert-config").innerHTML = "";
+} else {
+document.getElementById("alert-legend").setAttribute("style", "border:1px solid red")
+document.getElementById("alert-config").innerHTML = "*MUST enable Multicast or TAKServer Config to work*"
+}
 parametersNotificationCot(alertCotType.value, alertCotColor.value, notificationCot.checked)
 parametersNotificationChat(alertChatFormat.value, notificationChat.checked)
 };
 
 trackerSubmit.onclick = function() {
+if ((takserverStatus === true && rawTakserverCertError === false) || (multicastStatus === true || udpStatus === true)) {
 document.getElementById("tracker-legend").setAttribute("style", "border:1px solid MediumSeaGreen")
+document.getElementById("tracker-config").innerHTML = "";
+} else {
+document.getElementById("tracker-legend").setAttribute("style", "border:1px solid red")
+document.getElementById("tracker-config").innerHTML = "*MUST enable Multicast or TAKServer Config to work*"
+}
 trackerStatus = true;
 parametersTracker(kismetCotType.value, kismetCotColor.value,
-trackerRate.value, trackerCallsign.value, trackerEnable.checked)
+trackerRate.value, trackerCallsign.value.replace(/ /g, "_"), trackerEnable.checked)
 };
 
 targetSubmit.onclick = function() {
-document.getElementById("target-legend").setAttribute("style", "border:1px solid MediumSeaGreen")
 targetStatus = true;
+if (targetCot.checked) { targetCotStatus = true;};
+if (targetChat.checked) { targetChatStatus = true;};
+if ((targetCotStatus === true || targetChatStatus === true) && ((takserverStatus === true && rawTakserverCertError === false) || (multicastStatus === true || udpStatus === true))) {
+document.getElementById("target-legend").setAttribute("style", "border:1px solid MediumSeaGreen")
+document.getElementById("target-config").innerHTML = "";
+} else {
+document.getElementById("target-legend").setAttribute("style", "border:1px solid red")
+document.getElementById("target-config").innerHTML = "*MUST enable CoT or Chat AND Multicast or TAKServer Config to work*"
+}
+targetListArray.forEach(updateTargetMac);
 parametersTarget(targetListArray, targetEnable.checked)
+parametersTargetCot(targetCotType.value, targetCotColor.value, targetCot.checked)
+parametersTargetChat(targetChatFormat.value, targetChat.checked)
 };
 
 document.getElementById('file-target').addEventListener('change', function(event) {
@@ -1095,10 +1464,12 @@ checkInitialize();
 receiveInterfacesJson();
 //localInterfaces.forEach(updateInterfaceHtml);
 receivePersistJson();
+takserverPassword.innerHTML = "";
 //persistData();
 //matchValues();
 //checkActive();
 //checkDisabled();
+//setInterval(receivePersistJson, 10000)
 </script>
 
 </div>
@@ -1114,19 +1485,20 @@ kismet_ui.AddDeviceColumn('column_foo_channel', {
     sanitize: true,
     renderfunc: function(data, type, row, meta) {
 return `
-
 <button style="background:black; border:2px solid darkgray; color:white; width:80px" id="tak-fwd-${data}"><b>TAK-FWD</b></button>
 <p id ="test${data}"></p>
 <script>
 
 var currentHostname = window.location.hostname;
 var cot;
-//var status;
 var test;
 
 function post_data(send) {
 fetch('http://'+currentHostname+':8000/device', {
 method: 'POST',
+headers: {
+'Authorization': 'Bearer ' + apiToken
+},
 body: JSON.stringify(send)
 })
 .then(response => {
@@ -1149,7 +1521,7 @@ if (!response.ok) {
 throw new Error('Network response was not ok');
 }
 const getData = await response.json();
-console.log(getData);
+//console.log(getData);
 var lat1 = getData[0]['kismet.device.base.signal']['field.unknown.not.registered']['kismet.common.location.geopoint'][1];
 var lon1 = getData[0]['kismet.device.base.signal']['field.unknown.not.registered']['kismet.common.location.geopoint'][0];
 //var lat2 = getData[0]['kismet.device.base.location']['kismet.common.location.avg_loc']['kismet.common.location.geopoint'][1];
@@ -1165,14 +1537,12 @@ console.error('Error fetching data:', error);
 document.getElementById("tak-fwd-${data}").onclick = async function(event) {
 event.stopPropagation();
 await get_data('${data}');
-//document.getElementById("test${data}").innerHTML = JSON.stringify(cot);
 var status;
 if (cot === undefined || cot.device === undefined) {
 status = false;
 } else {
 status = true;
 }
-
 if (status === true) {
 post_data(cot);
 document.getElementById("tak-fwd-${data}").innerHTML = "SENT!";
@@ -1186,6 +1556,50 @@ cot = undefined;
 status = undefined;
 }; //end of onclick function()
 
+</script>
+`
+    },
+});
+
+kismet_ui.AddDeviceColumn('column_foo_channel', {
+    sTitle: 'Add Target',
+    field: 'kismet.device.base.macaddr',
+    sanitize: true,
+    renderfunc: function(data, type, row, meta) {
+return `
+<button style="background:white; border:2px solid darkgray; color:black; width:60px" id="target-add-${data}"><b>TGT+</b></button>
+<p id ="test${data}"></p>
+<script>
+
+var commonName;
+
+async function get_data_again(mac) {
+try {
+const response = await fetch('http://'+currentHostname+':2501//devices/by-mac/'+mac+'/devices.json');
+if (!response.ok) {
+throw new Error('Network response was not ok');
+}
+const getDataAgain = await response.json();
+//console.log(getDataAgain);
+var currentDeviceName = getDataAgain[0]['kismet.device.base.commonname'];
+commonName = currentDeviceName;
+} catch (error) {
+console.error('Error fetching data:', error);
+}
+};
+
+document.getElementById("target-add-${data}").onclick = async function(event) {
+event.stopPropagation();
+await get_data_again('${data}')
+document.getElementById("target-add-${data}").innerHTML = "ADDED!";
+document.getElementById("target-add-${data}").setAttribute("style", "background:white; border:2px solid green; color:black; width:60px");
+targetListArray.push(commonName);
+//console.log(commonName)
+targetList.innerHTML = "";
+targetListArray.forEach(updateTargetMac);
+targetListArray.forEach(updateTargetHtml);
+parametersTarget(targetListArray, targetEnable.checked)
+};
 </script>
 `
     },
