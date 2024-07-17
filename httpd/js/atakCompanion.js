@@ -8,7 +8,7 @@ if (typeof(KISMET_URI_PREFIX) !== 'undefined')
 kismet_ui_tabpane.AddTab({
     id: 'atak-companion',
     tabTitle: 'ATAK Companion',
-    expandable: true,
+    expandable: false,
     createCallback: function(div) {
         $(document).ready(function () {
 	$(div).append(`
@@ -238,11 +238,11 @@ button {
 <fieldset>
 <legend onclick="multicastDrop()" id="multicast-legend" class="dropdown-btn">Multicast Config: <i id="multicastIcon" class="fa fa-chevron-circle-right"></i></legend>
 <div id="multicastDrop" class="dropdown-container">
-<span style="padding:10px"><label for="multicast-enable">Broadcast All:</label><label class="enableSwitch"><input id="multicast-enable" type="checkbox"><span class="slider"></span></label></span>
+<span style="padding:10px"><label for="multicast-enable">Broadcast:</label><label class="enableSwitch"><input id="multicast-enable" type="checkbox"><span class="slider"></span></label></span>
 <br><br><span style="padding:10px"><label for="multicast-select">Broadcast Address:</label><select name="multicast-select" id="multicast-select" disabled="true">
 <option value="default" selected>239.2.3.1:6969 (Default)</option><option value="sensor">239.5.5.55:7171 (Sensor)</option></select></span>
 <br><br><span style="padding:10px"><label for="udp-enable">Send To:</label><label class="enableSwitch"><input id="udp-enable" type="checkbox"><span class="slider"></span></label></span>
-<br><br><span style="padding:10px"><label for="udp-add">Add Client:</label><input id="udp-add" type="text" placeholder="192.168.1.96" disabled="true">
+<br><br><span style="padding:10px"><label for="udp-add">Add Client IP:</label><input id="udp-add" type="text" placeholder="192.168.1.96" disabled="true">
 <button type="button" id="udp-add-button" disabled="true">Add</button> *case sensitive</span>
 <br><br><span style="padding:10px"><label for="udp-list">Select:</label><select name="udp-list" id="udp-list" disabled="true"></select>
 <button type="button" id="udp-delete-button" disabled="true">Remove</button>
@@ -325,22 +325,29 @@ button {
 
 <h3><u>Notes</u></h3>
 <ul>
-<li>Kismet should not run as root, this plugin will break kismet and explode. This means to NOT run "sudo" when starting kismet, or to start kismet.</li>
+<li>Kismet should not run as root, this plugin will break kismet and explode.</li>
 <li>GPS data is pulled from Kismets API so any GPS you provide Kismet (GPSD, virtual, serial) in kismet.conf will be used for ATAK Companion.</li>
 <li>Configurations for receiving CoT with kismet could be as follows: USB tether to ATAK, Cellular Modem/SixFab Cellular Hat, creating a WiFi AP over the RPi onboard WiFi interface, 
 Etherneting the RPi to ATAK directly. Bluetooth has the potential to be an option for future updates. A lot of the network configuration portion
- will likely need to be handled in the /etc/network/interfaces file for setting up USB tethering, Ethernet direct, and WiFi AP.</li>
-<li>The assumption for the ATAK Companion Plugin is that kismet is NOT being run as root, the atakCompanion directory is added to the ~/.kismet/plugins folder after running "make install" 
+ will likely need to be handled in the /etc/network/interfaces file for setting up USB tethering and Ethernet.</li>
+<li>The assumption for the ATAK Companion Plugin is that kismet is NOT being run as root and the "Release" version is being used (NOT the "Git" version), the atakCompanion directory is added to the ~/.kismet/plugins folder after running "make install" 
  and that its on a Linux OS, only Raspbian has been tested.</li>
 <li>iTAK has not been tested and often has issues receiving multicasted CoT that isnt a native TAK client, along with ChromeOS ATAK and Windows WinTAK (often firewall issues). 
  TAKX has also not been tested.</li>
 </ul>
 
-<h3><u>TAK Forwarder</u></h3>
+<h3><u>TAK Forwarder [TAK-FWD]</u></h3>
 <ul>
 <li>TAK-FWD button will send CoT marker on your messaging protocol configured (multicast/TAKServer) along with the CoT marker and color you configured in the Alerts Config</li>
 <li>When TAK-FWD button clicked it will either return "SENT!" or "NO-GPS!". If "NO-GPS!", this isnt because you dont have a valid GPS location data being pulled but because the device selected doesnt have GPS location attached to it in the device details. This is often an issue only with WiFi-Clients and WiFi-Bridge</li>
 <li>MUST enable and configure TAKServer Config or Multicast Config AND enable and configure Alerts Config for TAK Forwarder to work</li>
+</ul>
+
+<h3>Add Targets [TGT+]</h3>
+<ul>
+<li>Clicking on TGT+ will add the device name in that row to the list of targets in the "Target Config" tab.</li>
+<li>This does NOT add the device as a TGT in the kismet_alerts.conf file</li>
+<li>The device will be added as a target regardless if the Target Config service is enabled or not</li>
 </ul>
 
 <h3><u>Initialize</u></h3>
@@ -350,7 +357,7 @@ Etherneting the RPi to ATAK directly. Bluetooth has the potential to be an optio
 
 <h3><u>TAKServer</u></h3>
 <ul>
-<li>Do NOT include the port number in the server IP/Hostname input, if all 3 certs are uploaded it will default to port 8089, if no certs are uploaded it will default to 8087.</li>
+<li>Do NOT include the port number in the server IP/Hostname input.</li>
 <li>TAKServer user.pem, user.key, and ca.pem certs can be found in your TAKServers cert directory.</li>
 <li>The default TAKServer key password is "atakatak" unless it has been changed by the TAKServer administrator.</li>
 <li>It is recommended to have TAKServer create a new user cert for the ATAK Companion connection as to not conflict with multiple TAK devices using the same TAK user credentials.</li>
@@ -359,7 +366,9 @@ Etherneting the RPi to ATAK directly. Bluetooth has the potential to be an optio
 
 <h3><u>Multicast</u></h3>
 <ul>
-<li>There should NOT be a need to change the multicast address to anything but default, even chat messages will multicast and ingest over the default address fine.</li>
+<li>There should NOT be a need to change the multicast broadcast address to anything but default (239.2.3.1:6969), even chat messages will multicast and ingest over the default address fine.</li>
+<li>"Broadcast all" will send cot/chat messages to all TAK devices, however not all VPNs support this (wireguard).</li>
+<li>"Send to" will send cot/chat messages to the IPs inputted over default port 4242. this works for VPNs like wireguard that dont support udp multicast by default. Ensure your "Multicast NIC" is selected for the matching IP scheme of your inputted "Send To" devices</li>
 <li>Multicast NIC is the network interface that will have CoT multicast out on. you can multicast out over OpenVPN or Zerotier for TAK devices on the network to be able to receive without the need for a TAKServer.</li>
 <li>VPN interfaces are commonly tun0, Zerotier interfaces are commonly ztxxxx, USB tether interfaces are commonly usb0, WiFi APs are commonly wlan. Ensure you are not multicasting CoT on a WiFi interface that will end up in monitor mode for kismet!</li>
 </ul>
@@ -377,13 +386,13 @@ Etherneting the RPi to ATAK directly. Bluetooth has the potential to be an optio
 <h3><u>Kismet Targets</u></h3>
 <ul>
 <li>click the submit button after any changes made!</li>
-<li>MAC Addresses need to be in all caps!!! ie: A1:B2:C3:D4:E5:F6, not a1:b2:c3:d4:e5:f6</li>
+<li>MAC Addresses should be in all caps ie: A1:B2:C3:D4:E5:F6, not a1:b2:c3:d4:e5:f6</li>
+<li>partial mac addresses or ssids can be added as a target and it will detect all devices that include partial ssid text or MAC</li>
 <li>Target list persists across browser refreshes, kismet restarts and power reboots.</li>
 <li>Targets do NOT get added to kismets /etc/kismet/kismet_alerts.conf file, they are just filtered from the message bus and monitor websocket of detected devices and are not actual "kismet alerts".</li>
 <li>If you want kismet targets to be treated as a "kismet alert" you should add them in /etc/kismet/kismet_alerts.conf file where they will be handled as such.</li>
-<li>Alert Config: CoT or Chat service needs to be enabled if you want to receive CoT/Chat messages over TAK when these targets are detected!</li>
+<li>Ensure either CoT or GeoChat is enabled if using Targets.</li>
 <li>Target List files uploaded should be .txt files with targets seperated by commas (with no spaces). ie: SSID1wifi,ssid2WIFI,A1:B1:C1:D1:E1:F1,2A:2B:2C:2D:2E:2F</li>
-<li>Make sure to click Submit after adding/uploading targets!</li>
 </ul>
 
 <h3><u>TAK Tracker</u></h3>
