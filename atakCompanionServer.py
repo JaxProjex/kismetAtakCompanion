@@ -301,11 +301,11 @@ class RequestHandler(BaseHTTPRequestHandler):
         #if False:
         #    return
         #print(self.headers['Host'])
-        #if not self._check_auth():
-        #    if self.path != '/networklink.kml' or self.path != '/kismetdb.kml' or self.path != '/stream.kml':
-        #        print(self.path)
-        #        print("didnt pass do_get, exiting...")
-        #        return
+        if not self._check_auth():
+            if self.path != '/networklink.kml' and self.path != '/kismetdb.kml' and self.path != '/stream.kml':
+                print(self.path)
+                print("didnt pass do_get, exiting...")
+                return
         global kml_error, kml_service, kml_filepath, kml_file, httpd_username_status, httpd_password_status, target_chat_service, target_chat_format, target_cot_service, target_cot_type, target_cot_color, takserver_service, takserver_address, takserver_port, takserver_protocol, takserver_cert_error, takserver_cert_service, multicast_service, multicast_address, multicast_select, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_callsign, tracker_rate, tracker_cot, tracker_color, target_service, target_list, stream_cot_service, stream_cot_color, stream_cot_type
         if self.path == '/interfaces':
             self.send_response(200)
