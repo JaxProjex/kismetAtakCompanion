@@ -1,6 +1,6 @@
 from http.server import BaseHTTPRequestHandler, SimpleHTTPRequestHandler, HTTPServer #python api server
 import xml.etree.ElementTree as ET #readable cot template
-#import socketserver
+import socketserver #for network kml
 import websockets #for websocket client
 import subprocess #to run ifconfig and ssl decrypt
 import re #extract ip addresses
@@ -28,6 +28,7 @@ device_seen = 0
 current_ip = ""
 current_user = ""
 current_password = ""
+kml_network_link = "http://"+current_ip+":8000/networklink.kml"
 
 #kismet api gps
 current_lat = "0.0"
@@ -92,6 +93,11 @@ target_cot_service = False
 target_cot_type = ""
 target_cot_color = ""
 
+# stream cot details
+stream_cot_service = False
+stream_cot_type = ""
+stream_cot_color = ""
+
 # device from monitor ws
 device_array = []
 
@@ -105,6 +111,32 @@ check_file3 = os.path.expanduser("~/.kismet/plugins/atakCompanion/certs/user_pem
 check_file4 = os.path.expanduser("~/.kismet/plugins/atakCompanion/certs/ca_pem.pem")
 takserver_cert_service = os.path.isfile(check_file1) and os.path.isfile(check_file2) and os.path.isfile(check_file3) and os.path.isfile(check_file4)
 
+# kml file
+kml_file = ""
+kml_files = []
+kml_service = False
+kml_filepath = ""
+kml_error = False
+
+def get_kismet_files():
+    global kml_error, kml_filepath, kml_files, kml_file
+    kml_files = []
+    if kml_filepath == "":
+        kml_error = True
+        #set_kml_config()
+        return
+    directory = os.path.abspath(kml_filepath)
+    if not os.path.exists(directory):
+        kml_error = True
+        #set_kml_config()
+        return
+    if os.path.exists(directory):
+        kml_error = False
+        for filename in os.listdir(directory):
+            file_path = os.path.join(directory, filename)
+            if os.path.isfile(file_path) and filename.endswith('.kismet'):
+                kml_files.append(filename)
+    #kml_error = False
 
 # kismet user/pass login details
 httpd_username_status = False
@@ -168,7 +200,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 
     def _check_auth(self):
         auth_header = self.headers.get('Authorization')
-        if not auth_header or auth_header != f"Bearer {self.api_token}":
+        if not auth_header or auth_header != f"Bearer {self.api_token}": #change kml name
             self.send_response(401)
             self.send_header('Access-Control-Allow-Origin', '*')
             self.send_header('Content-type', 'application/json')
@@ -178,6 +210,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         return True
 
     def do_OPTIONS(self):
+        print("do_options")
         self.send_response(204)
         self.send_header('Access-Control-Allow-Origin', '*') #find a fix for local addresses
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
@@ -217,6 +250,10 @@ class RequestHandler(BaseHTTPRequestHandler):
                 handle_target_cot(json_data)
             elif message_id == 'target-chat':
                 handle_target_chat(json_data)
+            elif message_id == 'kismet-file':
+                handle_kml(json_data)
+            elif message_id == 'stream-cot':
+                handle_stream_cot(json_data)
                 #set_target_config()
 #            elif message_id == 'video':
 #                handle_video(json_data)
@@ -260,9 +297,11 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(b'Data received')
 
     def do_GET(self):
-        if not self._check_auth():
-            return
-        global httpd_username_status, httpd_password_status, target_chat_service, target_chat_format, target_cot_service, target_cot_type, target_cot_color, takserver_service, takserver_address, takserver_port, takserver_protocol, takserver_cert_error, takserver_cert_service, multicast_service, multicast_address, multicast_select, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_callsign, tracker_rate, tracker_cot, tracker_color, target_service, target_list
+        #if not self._check_auth() and (self.path != '/kismetdb.kml' or self.path != '/networklink.kml' self.path != '/stream.kml':
+        #if False:
+        #    return
+        #print(self.headers['Host'])
+        global kml_error, kml_service, kml_filepath, kml_file, httpd_username_status, httpd_password_status, target_chat_service, target_chat_format, target_cot_service, target_cot_type, target_cot_color, takserver_service, takserver_address, takserver_port, takserver_protocol, takserver_cert_error, takserver_cert_service, multicast_service, multicast_address, multicast_select, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_callsign, tracker_rate, tracker_cot, tracker_color, target_service, target_list, stream_cot_service, stream_cot_color, stream_cot_type
         if self.path == '/interfaces':
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
@@ -277,10 +316,44 @@ class RequestHandler(BaseHTTPRequestHandler):
             self.send_header('Content-type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
-            data = {"initialize": [httpd_username_status, httpd_password_status], "takserver": [takserver_service, takserver_address, takserver_protocol, takserver_cert_error, takserver_cert_service], "multicast": [multicast_service, multicast_select, multicast_interface, udp_service, udp_list], "notificationCot": [notification_cot_service, notification_cot_type, notification_cot_color], "notificationChat": [notification_chat_service, notification_chat_format], "tracker": [tracker_service, tracker_cot, tracker_color, tracker_rate, tracker_callsign], "target": [target_service, target_list], "targetCot": [target_cot_service, target_cot_type, target_cot_color], "targetChat": [target_chat_service, target_chat_format]}
+            data = {"initialize": [httpd_username_status, httpd_password_status], "takserver": [takserver_service, takserver_address, takserver_protocol, takserver_cert_error, takserver_cert_service], "multicast": [multicast_service, multicast_select, multicast_interface, udp_service, udp_list], "notificationCot": [notification_cot_service, notification_cot_type, notification_cot_color], "notificationChat": [notification_chat_service, notification_chat_format], "tracker": [tracker_service, tracker_cot, tracker_color, tracker_rate, tracker_callsign], "target": [target_service, target_list], "targetCot": [target_cot_service, target_cot_type, target_cot_color], "targetChat": [target_chat_service, target_chat_format], "kismetFiles": [kml_files, kml_service, kml_file, kml_filepath, kml_error], "stream": [stream_cot_service, stream_cot_type, stream_cot_color]}
             json_data = json.dumps(data)
             print(json_data)
             self.wfile.write(json_data.encode('utf-8'))
+        elif self.path == '/kismetdb.kml':
+            if kml_filepath == "":
+                return
+            kml_path = os.path.expanduser("~/.kismet/plugins/atakCompanion/kml/kismetdb.kml")
+            print(kml_path)
+            if os.path.exists(kml_filepath):
+                self.send_response(200)
+                self.send_header('Content-type', 'application/vnd.google-earth.kml+xml')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                with open(kml_path, 'rb') as file:
+                    self.wfile.write(file.read())
+        elif self.path == '/stream.kml':
+            kml_path = os.path.expanduser("~/.kismet/plugins/atakCompanion/kml/stream.kml")
+            print(kml_path)
+            if os.path.exists(kml_path):
+                self.send_response(200)
+                self.send_header('Content-type', 'application/vnd.google-earth.kml+xml')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                with open(kml_path, 'rb') as file:
+                    self.wfile.write(file.read())
+        elif self.path == '/networklink.kml':
+            print('/networklink.kml...')
+            create_kml_network_link("http://"+self.headers['Host']+"/stream.kml")
+            kml_path = os.path.expanduser("~/.kismet/plugins/atakCompanion/kml/networklink.kml")
+            print(kml_path)
+            if os.path.exists(kml_path):
+                self.send_response(200)
+                self.send_header('Content-type', 'application/vnd.google-earth.kml+xml')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                with open(kml_path, 'rb') as file:
+                    self.wfile.write(file.read())
         else:
             self.send_response(404)
             self.end_headers()
@@ -567,13 +640,14 @@ def test_send_takserver(): #send test over takserver
             set_takserver_config()
 
 def handle_initialize(data): #ws login config
-    global current_user, current_password, uri
+    global current_user, current_password, current_ip, uri, kml_network_link
     print("handle initialize...")
+    current_ip = data.get('ip')
+    #create_kml_network_link("http://"+current_ip+":8000/stream.kml")
     current_user = data.get('user')
     current_password = data.get('password')
     uri = f"ws://127.0.0.1:2501/eventbus/events.ws?user="+current_user+"&password="+current_password+""
-    print(current_user)
-    print(current_password)
+    print(current_ip)
     print(uri)
 
 def handle_takserver(data): #takserver config
@@ -689,6 +763,59 @@ def handle_target_chat(data): #target chat config
         target_chat_service = False
     set_target_chat_config()
 
+def handle_kml(data):
+    global kml_file, kml_service, kml_filepath, kml_error
+    print("handle_kml...")
+    if True:
+        kml_service = True
+        kml_file = data.get('file')
+        kml_filepath = data.get('directory')
+        if len(kml_filepath) > 2 and kml_filepath[0] != "/":
+            kml_filepath = "/" + kml_filepath
+        get_kismet_files();
+        kml_path = os.path.expanduser("~/.kismet/plugins/atakCompanion/kml/kismetdb.kml")
+        if kml_file != "" and kml_filepath != "":
+            try:
+                if os.path.exists(kml_path):
+                    command1 = ["rm", kml_path]
+                    result1 = subprocess.run(command1, capture_output=True, text=True, check=True)
+                    if result1.returncode == 0:
+                        print("Command executed successfully.")
+                        print("Output:", result1.stdout)
+                    else:
+                        kml_error = True
+                        print("Command failed with error code:", result1.returncode)
+                        print("Error output:", result1.stderr)
+                command = ["kismetdb_to_kml", "--in", os.path.join(kml_filepath, kml_file), "--out", kml_path]
+                print(command)
+                result = subprocess.run(command, capture_output=True, text=True, check=True)
+                if result.returncode == 0:
+                    kml_error = False
+                    print("Command executed successfully.")
+                    print("Output:", result.stdout)
+                else:
+                    kml_error = True
+                    print("Command failed with error code:", result.returncode)
+                    print("Error output:", result.stderr)
+            except subprocess.CalledProcessError as e:
+                kml_error = True
+                print("Command failed with exception:", e)
+    #elif False:
+    #    kml_service = False
+    #set_kml_config()
+
+def handle_stream_cot(data): #alert/notification config
+    global stream_cot_service, stream_cot_type, stream_cot_color, takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface
+    print("handle_stream_cot...")
+    if data.get('service') == True:
+        stream_cot_service = True
+        stream_cot_type = data.get('cot')
+        stream_cot_color = data.get('rgb')
+    elif data.get('service') == False:
+        stream_cot_service = False
+    set_stream_cot_config()
+
+
 #def handle_video(data): #video submitted
 #    global video_url, video_service, video_active
 #    print("handle_video...")
@@ -767,7 +894,7 @@ def handle_default(data):
 
 def get_config():
     print("get_config...")
-    global target_chat_service, target_chat_format, target_cot_service, target_cot_type, target_cot_color, udp_service, udp_list, udp_list_filter, takserver_cert_error, takserver_service, takserver_address, takserver_port, takserver_protocol, takserver_cert_service, takserver_password, multicast_service, multicast_address, multicast_select, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_callsign, tracker_cot, tracker_color, target_service, target_list, target_list_filter
+    global stream_cot_service, stream_cot_type, stream_cot_color, kml_error, kml_service, kml_file, kml_filepath, target_chat_service, target_chat_format, target_cot_service, target_cot_type, target_cot_color, udp_service, udp_list, udp_list_filter, takserver_cert_error, takserver_service, takserver_address, takserver_port, takserver_protocol, takserver_cert_service, takserver_password, multicast_service, multicast_address, multicast_select, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_callsign, tracker_cot, tracker_color, target_service, target_list, target_list_filter
     config.read(os.path.expanduser('~/.kismet/plugins/atakCompanion/persist/atakCompanionConfig.ini'))
 
     # takserver details
@@ -817,6 +944,17 @@ def get_config():
     target_cot_service = eval(config['TARGET']['cot_service'])
     target_cot_type = config['TARGET']['cot_type']
     target_cot_color = config['TARGET']['cot_color']
+
+    # kml details
+    #kml_file = config['KML']['file']
+    #kml_service = eval(config['KML']['service'])
+    #kml_filepath = config['KML']['filepath']
+    #kml_error = eval(config['KML']['error'])
+
+    # stream cot details
+    stream_cot_service = eval(config['STREAM']['cot_service'])
+    stream_cot_type = config['STREAM']['cot_type']
+    stream_cot_color = config['STREAM']['cot_color']
 
 
 def set_takserver_config():
@@ -907,6 +1045,29 @@ def set_target_cot_config():
         config.write(configfile)
     print("updated changes to atakCompanionConfig.ini file")
 
+def set_kml_config():
+    global kml_service, kml_file, kml_filepath, kml_error
+    config['KML']['service'] = str(kml_service)
+    if kml_file != "":
+        config['KML']['file'] = kml_file
+    if kml_filepath != "":
+        config['KML']['filepath'] = str(kml_filepath)
+    config['KML']['error'] = str(kml_error)
+    with open(os.path.expanduser('~/.kismet/plugins/atakCompanion/persist/atakCompanionConfig.ini'), 'w') as configfile:
+        config.write(configfile)
+    print("updated changes to atakCompanionConfig.ini file")
+
+def set_stream_cot_config():
+    global config, stream_cot_service, stream_cot_type, stream_cot_color, takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface
+    # stream cot details
+    config['STREAM']['cot_service'] = str(stream_cot_service)
+    config['STREAM']['cot_type'] = stream_cot_type
+    config['STREAM']['cot_color'] = stream_cot_color
+    with open(os.path.expanduser('~/.kismet/plugins/atakCompanion/persist/atakCompanionConfig.ini'), 'w') as configfile:
+        config.write(configfile)
+    print("updated changes to atakCompanionConfig.ini file")
+
+
 
 def handle_gps(data): #ws eventbus gps_location
     global current_lat, current_lon, takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
@@ -954,7 +1115,7 @@ def handle_message(data): #ws eventbus messages
                 #start_recording_service(target)
 
 def handle_monitor(name, mac, lat, lon): #ws monitor device/target matched
-    global target_list, target_service
+    global target_list, target_service, stream_cot_service, device_array
     #print("handle_monitor...")
     if target_service == True:
         for target in target_list:
@@ -966,6 +1127,8 @@ def handle_monitor(name, mac, lat, lon): #ws monitor device/target matched
                 print("target match of device_name from handle_monitor...")
                 remark = "Found: " + name
                 trigger_target_geo(remark, target, lat, lon)
+    elif stream_cot_service == True:
+        trigger_stream_geo("#kismet", name, lat, lon)
 
 def handle_timestamp(data):
     global current_timestamp
@@ -1061,6 +1224,35 @@ def trigger_target_geo(remarks, target, lat, lon): #used by monitor ws for targe
             cot = cot_template("chat", "cot_type", "cot_color", "Kismet-Chat-Takserver", target, remarks, target+current_timestamp_str, lat, lon)
             cot_send_takserver(cot)
 
+def trigger_stream_geo(remarks, target, lat, lon): #used by monitor ws for targets
+    global current_timestamp, stream_cot_service, stream_cot_type, stream_cot_color, target_chat_service, target_chat_format, target_cot_service, target_cot_type, target_cot_color, udp_service, udp_list, udp_list_filter, current_lat, current_lon,  takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface
+    #print("trigger_stream_geo")
+    if (stream_cot_service):
+        #print("send stream cot")
+        if (lat != "0.0" and lon != "0.0"):
+            marker = "cot"
+            if (stream_cot_type == "a-f-G-U-C"):
+                marker = "teammate"
+            elif (stream_cot_type == "b-m-p-s-m"):
+                marker = "spot"
+            elif (stream_cot_type == "pushpin"):
+                marker = "pushpin"
+            elif (stream_cot_type == "caution"):
+                marker = "caution"
+            if (multicast_service):
+                print("send target cot over multicast")
+                cot = cot_template(marker, stream_cot_type, stream_cot_color, target, target, remarks, target, lat, lon)
+                cot_send_multicast(cot, multicast_address, multicast_port, multicast_interface)
+            if (udp_service):
+                for clients in udp_list:
+                    print("send target cot over udp")
+                    cot = cot_template(marker, stream_cot_type, stream_cot_color, target, target, remarks, target, lat, lon)
+                    cot_send_multicast(cot, clients, 4242, multicast_interface)
+            if (takserver_service):
+                print("send target cot over takserver")
+                cot = cot_template(marker, stream_cot_type, stream_cot_color, target, target, remarks, target, lat, lon)
+                cot_send_takserver(cot)
+
 def trigger_tracker():
     global current_lat, current_lon, takserver_service, takserver_address, takserver_port, multicast_service, multicast_address, multicast_port, multicast_interface, udp_service, udp_list, udp_list_filter, notification_chat_service, notification_chat_format, notification_cot_service, notification_cot_type, notification_cot_color, tracker_service, tracker_rate, tracker_cot, tracker_color, target_service, target_list
     print("tracker trigger")
@@ -1093,23 +1285,89 @@ def trigger_tracker():
 def target_find_mac(target):
     print("target_find_mac...")
 
-def create_kml():
-    print("create_kml...")
+def create_kml_network_link(link):
+    print("create_kml_network_link...")
+    with open(os.path.expanduser("~/.kismet/plugins/atakCompanion/kml/networklink.kml"), 'w') as file:
+        file.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+        file.write('<kml xmlns="http://www.opengis.net/kml/2.2">\n')
+        file.write('  <Document>\n')
+        file.write('    <name>KML</name>\n')
+        file.write('    <description>KML Network Link</description>\n')
+        file.write('    <NetworkLink\n')
+        file.write('        <name>Dynamic Data</name>\n')
+        file.write('        <description>External Source</description>\n')
+        file.write('        <Link>\n')
+        file.write(f'          <href>{link}</href>\n')
+        file.write('          <refreshMode>onInterval</refreshMode>\n')
+        file.write('          <refreshInterval>3600</refreshInterval>\n')
+        file.write('        </Link>\n')
+        file.write('    </NetworkLink>\n')
+        file.write('  </Document>\n')
+        file.write('</kml>\n')
+
+def update_kml():
     global device_array
-    for device in device_array:
-        print(device['name'])
-        print(device['mac'])
-        print(device['location'])
+    while True:
+        print("update_kml...")
+        create_kml(device_array)
+        time.sleep(60)
+
+def create_kml(arr):
+    #print("create_kml...")
+    global device_array
+    with open(os.path.expanduser("~/.kismet/plugins/atakCompanion/kml/stream.kml"), 'w') as file:
+        file.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+        file.write('<kml xmlns="http://www.opengis.net/kml/2.2">\n')
+        file.write('  <Document>\n')
+        for device in arr:
+            location = "0,0"
+            name = device.get('name')
+            if device.get('location') and len(device.get('location')) == 2:
+                lat = str(device['location'][1])
+                lon = str(device['location'][0])
+                location = lon+","+lat
+            if location != "0,0":
+                file.write('    <Placemark>\n')
+                file.write(f'      <name>{name}</name>\n')
+                file.write('      <Point>\n')
+                file.write(f'        <coordinates>{location}</coordinates>\n')
+                file.write('      </Point>\n')
+                file.write('    </Placemark>\n')
+        file.write('  </Document>\n')
+        file.write('</kml>\n')
+
+   #for device in device_array:
+   #    print(device['name'])
+   #    print(device['mac'])
+   #    print(device['location'])
+
+def add_device_filter(arr, device):
+    global device_array
+    for i, obj in enumerate(arr):
+        if obj['name'] == device['name']:
+            #print("obj already exists, updating lat/lon")
+            arr[i] = device
+            return
+        #if obj.get('location') and len(obj.get('location') == 2:
+        #obj['location'] = device['location']
+        #print(obj.get('location'))
+    arr.append(device)
 
 def check_services():
     global tracker_service
     if tracker_service == True:
         start_tracker_service()
+    start_kml_service()
 
 def start_tracker_service(): #start tracker pings in threading so other code can continue to run
     tracker_thread = threading.Thread(target=trigger_tracker)
     tracker_thread.daemon = True
     tracker_thread.start()
+
+def start_kml_service():
+    kml_thread = threading.Thread(target=update_kml)
+    kml_thread.daemon = True
+    kml_thread.start()
 
 #def start_recording_service(device): #start video url recording in threading so other code can continue to run
 #    video_thread = threading.Thread(target=start_recording, args=(device,current_timestamp))
@@ -1125,7 +1383,7 @@ async def update_date():
         await asyncio.sleep(10)
 
 async def subscribe_to_ws_monitor():
-    global uri_monitor
+    global uri_monitor, device_array
     print("subscribe_to_ws_monitor is running")
     while True:
         try:
@@ -1140,11 +1398,20 @@ async def subscribe_to_ws_monitor():
                     device_mac = json_data.get('kismet.device.base.macaddr')
                     device_location = json_data.get('kismet.common.location.geopoint') #last location seen
                     device_object = {"name":device_name, "mac":device_mac, "location":device_location}
-                    device_array.append(device_object)
+                    #device_array.append(device_object)
                     if device_location and len(device_location) == 2:
                         device_lat = str(json_data['kismet.common.location.geopoint'][1])
                         device_lon = str(json_data['kismet.common.location.geopoint'][0])
-                        handle_monitor(device_name, device_mac, device_lat, device_lon)
+                    elif current_lat != "0.0" and current_lon != "0.0":
+                        device_lat = current_lat
+                        device_lon = current_lon
+                    else:
+                        device_lat = "0.0"
+                        device_lon = "0.0"
+                    device_location = [device_lon, device_lat]
+                    device_object = {"name":device_name, "mac":device_mac, "location":device_location}
+                    add_device_filter(device_array, device_object)
+                    handle_monitor(device_name, device_mac, device_lat, device_lon)
                     #print("Received message:", json_data)
         except Exception as e:
             print("WebSocket connection closed. Reconnecting ws_monitor...")
@@ -1184,7 +1451,7 @@ async def subscribe_to_ws():
 async def main_ws():
     while True: #while loop to attempt to reconnect to ws if disconnected
         await asyncio.gather(
-            subscribe_to_ws(),
+            #subscribe_to_ws(),
             subscribe_to_ws_monitor(),
             update_date(),
         )
@@ -1192,6 +1459,7 @@ async def main_ws():
 def main_server(server_class=HTTPServer, handler_class=RequestHandler, host='', port=8000):
     server_address = (host, port)
     httpd = server_class(server_address, handler_class)
+    httpd
     print(f'Starting server on port {port}...')
     get_config()
     check_services()
@@ -1201,6 +1469,5 @@ if __name__ == '__main__':
 
     http_thread = threading.Thread(target=main_server)
     http_thread.start() #starts http api server
-
     asyncio.run(main_ws()) #starts websocket connection
     #asyncio.run(monitor_ws()) #starts websocket connection
