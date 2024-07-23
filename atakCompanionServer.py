@@ -302,7 +302,7 @@ class RequestHandler(BaseHTTPRequestHandler):
         #    return
         #print(self.headers['Host'])
         if not self._check_auth():
-            if self.path != '/networklink.kml' or self.path != '/kismetdb.kml' or self.path != '/stream.kml'):
+            if self.path != '/networklink.kml' or self.path != '/kismetdb.kml' or self.path != '/stream.kml':
                 print(self.path)
                 print("didnt pass do_get, exiting...")
                 return
