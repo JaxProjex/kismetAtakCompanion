@@ -16,6 +16,7 @@ install:
 	cp -r httpd $(HOME)/.kismet/plugins/$(PLUGIN_NAME)
 	cp -r persist $(HOME)/.kismet/plugins/$(PLUGIN_NAME)
 	mkdir -p ${HOME}/.kismet/plugins/$(PLUGIN_NAME)/certs
+	mkdir -p ${HOME}/.kismet/plugins/$(PLUGIN_NAME)/kml
 	mkdir -p ${HOME}/.config/systemd/user
 	chmod +x $(HOME)/.kismet/plugins/$(PLUGIN_NAME)/atakCompanionScript.py
 	$(INSTALL) -m 644 monitor_atakCompanion.service ${HOME}/.config/systemd/user/monitor_atakCompanion.service
