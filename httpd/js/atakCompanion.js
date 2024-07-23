@@ -8,7 +8,7 @@ if (typeof(KISMET_URI_PREFIX) !== 'undefined')
 kismet_ui_tabpane.AddTab({
     id: 'atak-companion',
     tabTitle: 'ATAK Companion',
-    expandable: false,
+    expandable: true,
     createCallback: function(div) {
         $(document).ready(function () {
 	$(div).append(`
@@ -202,7 +202,7 @@ button {
 
 <div style="border:1px solid white" id="all-fields">
 
-<div style="padding:5px">
+<div style="padding:2px">
 <fieldset>
 <legend onclick="initializeDrop()" id="initialize-legend" class="dropdown-btn" style="border 1px solid red">Initialize: <i id="initializeIcon" class="fa fa-chevron-circle-right"></i></legend>
 <div id="initializeDrop" class="dropdown-container">
@@ -215,7 +215,7 @@ button {
 </fieldset>
 </div>
 
-<div style="padding:5px">
+<div style="padding:2px">
 <fieldset>
 <legend onclick="takserverDrop()" id="takserver-legend" class="dropdown-btn">TAKServer Config: <i id="takserverIcon" class="fa fa-chevron-circle-right"></i></legend>
 <div id="takserverDrop" class="dropdown-container">
@@ -234,15 +234,15 @@ button {
 </fieldset>
 </div>
 
-<div style="padding:5px">
+<div style="padding:2px">
 <fieldset>
 <legend onclick="multicastDrop()" id="multicast-legend" class="dropdown-btn">Multicast Config: <i id="multicastIcon" class="fa fa-chevron-circle-right"></i></legend>
 <div id="multicastDrop" class="dropdown-container">
-<span style="padding:10px"><label for="multicast-enable">Broadcast:</label><label class="enableSwitch"><input id="multicast-enable" type="checkbox"><span class="slider"></span></label></span>
+<span style="padding:10px"><label for="multicast-enable">Broadcast All:</label><label class="enableSwitch"><input id="multicast-enable" type="checkbox"><span class="slider"></span></label></span>
 <br><br><span style="padding:10px"><label for="multicast-select">Broadcast Address:</label><select name="multicast-select" id="multicast-select" disabled="true">
 <option value="default" selected>239.2.3.1:6969 (Default)</option><option value="sensor">239.5.5.55:7171 (Sensor)</option></select></span>
 <br><br><span style="padding:10px"><label for="udp-enable">Send To:</label><label class="enableSwitch"><input id="udp-enable" type="checkbox"><span class="slider"></span></label></span>
-<br><br><span style="padding:10px"><label for="udp-add">Add Client IP:</label><input id="udp-add" type="text" placeholder="192.168.1.96" disabled="true">
+<br><br><span style="padding:10px"><label for="udp-add">Add Client:</label><input id="udp-add" type="text" placeholder="192.168.1.96" disabled="true">
 <button type="button" id="udp-add-button" disabled="true">Add</button> *case sensitive</span>
 <br><br><span style="padding:10px"><label for="udp-list">Select:</label><select name="udp-list" id="udp-list" disabled="true"></select>
 <button type="button" id="udp-delete-button" disabled="true">Remove</button>
@@ -254,7 +254,7 @@ button {
 </fieldset>
 </div>
 
-<div style="padding:5px">
+<div style="padding:2px">
 <fieldset>
 <legend onclick="alertsDrop()" id="alert-legend" class="dropdown-btn">Kismet Alerts Config: <i id="alertsIcon" class="fa fa-chevron-circle-right"></i></legend>
 <div id="alertsDrop" class="dropdown-container">
@@ -274,7 +274,7 @@ button {
 </fieldset>
 </div>
 
-<div style="padding:5px">
+<div style="padding:2px">
 <fieldset>
 <legend onclick="targetDrop()" id="target-legend" class="dropdown-btn">Kismet Targets Config: <i id="targetIcon" class="fa fa-chevron-circle-right"></i></legend>
 <div id="targetDrop" class="dropdown-container">
@@ -301,7 +301,7 @@ button {
 </fieldset>
 </div>
 
-<div style="padding:5px">
+<div style="padding:2px">
 <fieldset>
 <legend onclick="trackerDrop()" id="tracker-legend" class="dropdown-btn">TAK Tracker Config: <i id="trackerIcon" class="fa fa-chevron-circle-right"></i></legend>
 <div id="trackerDrop" class="dropdown-container">
@@ -309,45 +309,72 @@ button {
 <br><br><span style="padding:10px"><label for="tracker-callsign">TAK Callsign:</label><input type="text" id="tracker-callsign" placeholder="Kismet-Tracker" disabled=true></span>
 <br><br><span style="padding:10px"><label for="tracker-rate">Ping Rate (seconds):</label><input type="number" id="tracker-rate" value="60" placeholder="10" disabled=true></span>
 <br><br><span style="padding:10px"><label for="kismet-cot-type">CoT Type:</label><select name="kismet-cot-type" id="kismet-cot-type" disabled="true">
-<option value="a-f-G-U-C" selected>Team</option><option value="a-f-G">Friendly</option><option value="pushpin">Pushpin</option><option value="b-m-p-s-m">Spot</option><option value="a-n-G">Neutral</option><option value="a-h-G">Hostile</option></select></span>
+<option value="a-f-G-U-C" selected>Team</option><option value="a-f-G">Friendly</option><option value="pushpin">Pushpin</option><option value="b-m-p-s-m">Spot</option>
+<option value="a-n-G">Neutral</option><option value="a-h-G">Hostile</option></select></span>
 <br><br><span style="padding:10px"><label for="kismet-cot-color">CoT Color:</label><select name="kismet-cot-color" id="kismet-cot-color" disabled="true">
-<option value="-16711936">Green</option><option value="-16711681" selected>Cyan</option><option value="-65536">Red</option><option value="-16776961">Blue</option><option value="-256">Yellow</option><option value="-65281">Purple</option></select></span>
+<option value="-16711936">Green</option><option value="-16711681" selected>Cyan</option><option value="-65536">Red</option><option value="-16776961">Blue</option>
+<option value="-256">Yellow</option><option value="-65281">Purple</option></select></span>
 <br><br><span style="padding:10px"><button class="submitButton disabled" id="tracker-submit" type="button" disabled=true><b>Submit</b></button><span id="tracker-status"></span></span>
 <br><br><span id="tracker-config" style="color:red;background-color:black">*MUST enable Multicast or TAKServer Config to work*</span>
 </div>
 </fieldset>
 </div>
 
-<div style="padding:5px">
+<div style="padding:2px">
+<fieldset>
+<legend onclick="kmlDrop()" id="kml-legend" class="dropdown-btn">Kismet KML Config: <i id="kmlIcon" class="fa fa-chevron-circle-right"></i></legend>
+<div id="kmlDrop" class="dropdown-container">
+<span style="padding:10px"><label for="kml-filepath">KismetDB Dir:</label><input type="text" id="kml-filepath" placeholder="/home/pi/kismetFiles/">
+<button id="kismet-check">Verify</button></span>
+<br><br><span style="padding:10px"><label for="kismet-files">KismetDB File:</label><select name="kismet-files" id="kismet-files"></select></span>
+<br><br><span id="kml-link" style="padding:5px;background-color:black;color:white">KismetDB File KML: http://localhost:8000/kismetdb.kml</span>
+<br><br><span style="padding:5px;background-color:black;color:white;border:1px solid MediumSeaGreen">Kismet Network KML: http://localhost:8000/networklink.kml</span>
+<br><br><span id="kml-config" style="color:red;background-color:black"></span>
+</div>
+</fieldset>
+</div>
+
+
+<div style="padding:2px">
+<fieldset>
+<legend onclick="streamDrop()" id="stream-legend" class="dropdown-btn">Kismet Stream Config: <i id="streamIcon" class="fa fa-chevron-circle-right"></i></legend>
+<div id="streamDrop" class="dropdown-container">
+<span style="padding:10px"><label for="stream-enable">Enable:</label><label class="enableSwitch"><input id="stream-enable" type="checkbox"><span class="slider"></span></label></span>
+<br><br><span style="padding:10px"><label for="stream-cot-type">CoT Type:</label><select name="stream-cot-type" id="stream-cot-type" disabled="true">
+<option value="a-f-G">Friendly</option><option value="pushpin">Pushpin</option><option value="b-m-p-s-m">Spot</option>
+<option value="a-n-G">Neutral</option></select></span>
+<br><br><span style="padding:10px"><label for="stream-cot-color">CoT Color:</label><select name="stream-cot-color" id="stream-cot-color" disabled="true">
+<option value="-16711936">Green</option><option value="-16711681" selected>Cyan</option><option value="-65536">Red</option><option value="-16776961">Blue</option>
+<option value="-256">Yellow</option><option value="-65281">Purple</option></select></span>
+<br><br><span style="padding:10px"><button class="submitButton disabled" id="stream-submit" type="button" disabled=true><b>Submit</b></button><span id="stream-status"></span></span>
+<br><br><span id="stream-config" style="color:red;background-color:black">*MUST enable Multicast or TAKServer Config to work*</span>
+</div>
+</fieldset>
+</div>
+
+<div style="padding:2px">
 <fieldset>
 <legend style="border:2px solid black;background-color:white;color:black" onclick="guideDrop()" id="guide-legend" class="dropdown-btn">User Guide: <i id="guideIcon" class="fa fa-chevron-circle-right"></i></legend>
 <div id="guideDrop" class="dropdown-container">
 
 <h3><u>Notes</u></h3>
 <ul>
-<li>Kismet should not run as root, this plugin will break kismet and explode.</li>
+<li>Kismet should not run as root, this plugin will break kismet and explode. This means to NOT run "sudo" when starting kismet, or to start kismet.</li>
 <li>GPS data is pulled from Kismets API so any GPS you provide Kismet (GPSD, virtual, serial) in kismet.conf will be used for ATAK Companion.</li>
 <li>Configurations for receiving CoT with kismet could be as follows: USB tether to ATAK, Cellular Modem/SixFab Cellular Hat, creating a WiFi AP over the RPi onboard WiFi interface, 
 Etherneting the RPi to ATAK directly. Bluetooth has the potential to be an option for future updates. A lot of the network configuration portion
- will likely need to be handled in the /etc/network/interfaces file for setting up USB tethering and Ethernet.</li>
-<li>The assumption for the ATAK Companion Plugin is that kismet is NOT being run as root and the "Release" version is being used (NOT the "Git" version), the atakCompanion directory is added to the ~/.kismet/plugins folder after running "make install" 
+ will likely need to be handled in the /etc/network/interfaces file for setting up USB tethering, Ethernet direct, and WiFi AP.</li>
+<li>The assumption for the ATAK Companion Plugin is that kismet is NOT being run as root, the atakCompanion directory is added to the ~/.kismet/plugins folder after running "make install" 
  and that its on a Linux OS, only Raspbian has been tested.</li>
 <li>iTAK has not been tested and often has issues receiving multicasted CoT that isnt a native TAK client, along with ChromeOS ATAK and Windows WinTAK (often firewall issues). 
  TAKX has also not been tested.</li>
 </ul>
 
-<h3><u>TAK Forwarder [TAK-FWD]</u></h3>
+<h3><u>TAK Forwarder</u></h3>
 <ul>
 <li>TAK-FWD button will send CoT marker on your messaging protocol configured (multicast/TAKServer) along with the CoT marker and color you configured in the Alerts Config</li>
 <li>When TAK-FWD button clicked it will either return "SENT!" or "NO-GPS!". If "NO-GPS!", this isnt because you dont have a valid GPS location data being pulled but because the device selected doesnt have GPS location attached to it in the device details. This is often an issue only with WiFi-Clients and WiFi-Bridge</li>
 <li>MUST enable and configure TAKServer Config or Multicast Config AND enable and configure Alerts Config for TAK Forwarder to work</li>
-</ul>
-
-<h3>Add Targets [TGT+]</h3>
-<ul>
-<li>Clicking on TGT+ will add the device name in that row to the list of targets in the "Target Config" tab.</li>
-<li>This does NOT add the device as a TGT in the kismet_alerts.conf file</li>
-<li>The device will be added as a target regardless if the Target Config service is enabled or not</li>
 </ul>
 
 <h3><u>Initialize</u></h3>
@@ -357,7 +384,7 @@ Etherneting the RPi to ATAK directly. Bluetooth has the potential to be an optio
 
 <h3><u>TAKServer</u></h3>
 <ul>
-<li>Do NOT include the port number in the server IP/Hostname input.</li>
+<li>Do NOT include the port number in the server IP/Hostname input, if all 3 certs are uploaded it will default to port 8089, if no certs are uploaded it will default to 8087.</li>
 <li>TAKServer user.pem, user.key, and ca.pem certs can be found in your TAKServers cert directory.</li>
 <li>The default TAKServer key password is "atakatak" unless it has been changed by the TAKServer administrator.</li>
 <li>It is recommended to have TAKServer create a new user cert for the ATAK Companion connection as to not conflict with multiple TAK devices using the same TAK user credentials.</li>
@@ -366,9 +393,7 @@ Etherneting the RPi to ATAK directly. Bluetooth has the potential to be an optio
 
 <h3><u>Multicast</u></h3>
 <ul>
-<li>There should NOT be a need to change the multicast broadcast address to anything but default (239.2.3.1:6969), even chat messages will multicast and ingest over the default address fine.</li>
-<li>"Broadcast all" will send cot/chat messages to all TAK devices, however not all VPNs support this (wireguard).</li>
-<li>"Send to" will send cot/chat messages to the IPs inputted over default port 4242. this works for VPNs like wireguard that dont support udp multicast by default. Ensure your "Multicast NIC" is selected for the matching IP scheme of your inputted "Send To" devices</li>
+<li>There should NOT be a need to change the multicast address to anything but default, even chat messages will multicast and ingest over the default address fine.</li>
 <li>Multicast NIC is the network interface that will have CoT multicast out on. you can multicast out over OpenVPN or Zerotier for TAK devices on the network to be able to receive without the need for a TAKServer.</li>
 <li>VPN interfaces are commonly tun0, Zerotier interfaces are commonly ztxxxx, USB tether interfaces are commonly usb0, WiFi APs are commonly wlan. Ensure you are not multicasting CoT on a WiFi interface that will end up in monitor mode for kismet!</li>
 </ul>
@@ -386,13 +411,13 @@ Etherneting the RPi to ATAK directly. Bluetooth has the potential to be an optio
 <h3><u>Kismet Targets</u></h3>
 <ul>
 <li>click the submit button after any changes made!</li>
-<li>MAC Addresses should be in all caps ie: A1:B2:C3:D4:E5:F6, not a1:b2:c3:d4:e5:f6</li>
-<li>partial mac addresses or ssids can be added as a target and it will detect all devices that include partial ssid text or MAC</li>
+<li>MAC Addresses need to be in all caps!!! ie: A1:B2:C3:D4:E5:F6, not a1:b2:c3:d4:e5:f6</li>
 <li>Target list persists across browser refreshes, kismet restarts and power reboots.</li>
 <li>Targets do NOT get added to kismets /etc/kismet/kismet_alerts.conf file, they are just filtered from the message bus and monitor websocket of detected devices and are not actual "kismet alerts".</li>
 <li>If you want kismet targets to be treated as a "kismet alert" you should add them in /etc/kismet/kismet_alerts.conf file where they will be handled as such.</li>
-<li>Ensure either CoT or GeoChat is enabled if using Targets.</li>
+<li>Alert Config: CoT or Chat service needs to be enabled if you want to receive CoT/Chat messages over TAK when these targets are detected!</li>
 <li>Target List files uploaded should be .txt files with targets seperated by commas (with no spaces). ie: SSID1wifi,ssid2WIFI,A1:B1:C1:D1:E1:F1,2A:2B:2C:2D:2E:2F</li>
+<li>Make sure to click Submit after adding/uploading targets!</li>
 </ul>
 
 <h3><u>TAK Tracker</u></h3>
@@ -403,6 +428,24 @@ Etherneting the RPi to ATAK directly. Bluetooth has the potential to be an optio
 <li>CoT Type is the marker/icon used.</li>
 <li>TAK Tracker service does NOT continue running when kismet service is stopped</li>
 <li>Make sure a messaging protocol is enabled, either TAKServer or multicast for CoT to send out over</li>
+</ul>
+
+<h3><u>Kismet KML Config</u></h3>
+<ul>
+<li>!!! This is still a buggy feature, sometimes if you type in the link and it doesnt work you have to click enter twice, idk. browser cache issues it seems.</li>
+<li>Enter the filepath to the directory that kismet files are being stored, this is generally the filepath you run the kismet command in (this should/MUST be in a user directory!)</li>
+<li>Verify button will check if the filepath exists and will have all files with a .kismet extension displayed in the dropdown menu in "kismet files"</li>
+<li>Once the file is selected it will check if the .kismet file has any device data with gps coordinates in it, otherwise it will display an error that the .kismet file couldnt be turned into a kml</li>
+<li>The .kismet file will be served/downloadable at the link displayed below with the "/kismetdb.kml" path</li>
+<li>To import and display the current active devices being scanned as a kml you can use the KML network link with the "/networklink.kml" path</li>
+<li>Kismetdb should not be used for the active .kismet file being logged to, it should only be used for past kismet files, otherwise use the networklink for active kismet devices</li>
+</ul>
+
+<h3><u>Kismet Stream Config</u></h3>
+<ul>
+<li>!!! This can potentially crash ATAK</li>
+<li>Kismet Stream will send all devices scanned to plot on ATAK, it will have a #kismet in the remarks section so all cot markers can be toggled off in Overlays > Hashtags > #kismet</li>
+<li>Multicast or TAKServer is required as the messaging protocol to send to TAK Devices</li>
 </ul>
 
 </div>
@@ -464,6 +507,15 @@ var targetCotType = document.getElementById("target-cot-type");
 var targetCotColor = document.getElementById("target-cot-color");
 var targetChatFormat = document.getElementById("target-chat-format");
 
+var kmlFilepath = document.getElementById("kml-filepath");
+var kmlFiles = document.getElementById("kismet-files");
+var kmlLink = document.getElementById("kml-link");
+var kmlCheck = document.getElementById("kismet-check");
+
+var streamEnable = document.getElementById("stream-enable");
+var streamCotType = document.getElementById("stream-cot-type");
+var streamCotColor = document.getElementById("stream-cot-color");
+var streamSubmit = document.getElementById("stream-submit");
 
 const apiToken = "thecakeisalie"
 
@@ -475,6 +527,7 @@ var targetListStringFile;
 
 var localInterfaces = [];
 
+// STATUS
 var takserverStatus;
 var takserverCertStatus;
 var multicastStatus;
@@ -485,10 +538,14 @@ var targetStatus;
 var trackerStatus;
 var targetCotStatus;
 var targetChatStatus;
+var kmlStatus;
+var streamStatus
 
+// KISMET LOGIN
 var rawHttpdUser;
 var rawHttpdPassword;
 
+// TAKSERVER
 var rawTakserverService;
 var rawTakserverAddress;
 var rawTakserverPassword;
@@ -499,24 +556,28 @@ var rawTakserverProtocol;
 var rawTakserverCertError;
 var rawTakserverCertService;
 
+// MULTICAST
 var rawMulticastService;
 var rawMulticastSelect;
 var rawMulticastInterface;
 var rawUdpService;
 var rawUdpList = [];
 
+// KISMET ALERTS
 var rawNotificationChatService;
 var rawNotificationChatFormat;
 var rawNotificationCotService;
 var rawNotificationCotType;
 var rawNotificationCotColor;
 
+// TAK TRACKER
 var rawTrackerService;
 var rawTrackerCot;
 var rawTrackerColor;
 var rawTrackerRate;
 var rawTrackerCallsign;
 
+// TARGETS
 var rawTargetService;
 var rawTargetList = [];
 
@@ -526,13 +587,26 @@ var rawTargetCotService;
 var rawTargetCotType;
 var rawTargetCotColor;
 
+// KML
+var rawKismetFiles = [];
+var rawKmlService;
+var rawKmlError;
+var rawKmlFile;
+var rawKmlFilepath;
 
+// STREAM
+var rawStreamService;
+var rawStreamCotType;
+var rawStreamCotColor;
+
+// INITIALIZE
 var currentHostname = window.location.hostname;
 var currentIp;
 var currentUser;
 var currentPassword;
 var initializeSubmit = document.getElementById("initialize-submit");
 
+// TAKSERVER CERTS
 function uploadFiles() {
     var userPemFile = document.getElementById('user-cert').files[0];
     var userKeyFile = document.getElementById('user-key').files[0];
@@ -605,7 +679,7 @@ if (rootCert.files.value !== 0) {
 }
 }
 
-
+// SET STATUS FROM PERSIST GET REQ
 function matchValues() {
 takserverStatus = rawTakserverService;
 takserverCertStatus = rawTakserverCertService;
@@ -619,6 +693,8 @@ targetChatStatus = rawTargetChatService;
 targetStatus = rawTargetService;
 trackerStatus = rawTrackerService;
 targetListArray = rawTargetList;
+//kmlStatus = rawKmlService;
+streamStatus = rawStreamService;
 }
 
 
@@ -662,8 +738,8 @@ if (trackerEnable.checked === true) {
 trackerRate.disabled = false;
 trackerCallsign.disabled = false;
 kismetCotType.disabled = false;
-if (kismetCotType.value === "b-m-p-s-m" || kismetCotType.value === "a-f-G-U-C" || kismetCotType.value === "pushpin") {
 trackerSubmit.disabled = false;
+if (kismetCotType.value === "b-m-p-s-m" || kismetCotType.value === "a-f-G-U-C" || kismetCotType.value === "pushpin") {
 kismetCotColor.disabled = false;
 }}
 if (targetEnable.checked === true) {
@@ -685,7 +761,17 @@ if (targetCotType.value === "b-m-p-s-m" || targetCotType.value === "a-f-G-U-C" |
 targetCotColor.disabled = false;
 }}
 }
+if (kmlFilepath.innerHTML !== "") {
+kmlCheck.disabled = false;
+}
+if (streamEnable.checked === true) {
+streamCotType.disabled = false;
+streamSubmit.disabled = false;
+if (streamCotType.value === "b-m-p-s-m" || streamCotType.value === "pushpin") {
+streamCotColor.disabled = false;
+}}
 };
+
 
 function checkActive() {
 if (takserverStatus === true && rawTakserverCertError === false) {
@@ -726,6 +812,32 @@ document.getElementById("alert-legend").setAttribute("style", "border:1px solid 
 document.getElementById("alert-config").innerHTML = "*MUST enable Multicast or TAKServer Config to work*"
 } else {
 document.getElementById("alert-legend").setAttribute("style", "border:1px solid white")
+}
+if (kmlFilepath.value === "") {
+document.getElementById("kml-legend").setAttribute("style", "border:1px solid white")
+document.getElementById("kml-config").innerHTML = ""
+document.getElementById("kml-link").setAttribute("style", "padding:5px;background-color:black;color:white;border:1px solid white")
+} else if (kmlFiles.value === "" && rawKmlError === false) {
+document.getElementById("kml-legend").setAttribute("style", "border:1px solid white")
+document.getElementById("kml-config").innerHTML = ""
+document.getElementById("kml-link").setAttribute("style", "padding:5px;background-color:black;color:white;border:1px solid white")
+} else if (rawKmlError === true) {
+document.getElementById("kml-legend").setAttribute("style", "border:1px solid red")
+document.getElementById("kml-config").innerHTML = "*error turning kismet file into kml*"
+document.getElementById("kml-link").setAttribute("style", "padding:5px;background-color:black;color:white;border:1px solid red")
+} else {
+document.getElementById("kml-legend").setAttribute("style", "border:1px solid MediumSeaGreen")
+document.getElementById("kml-config").innerHTML = ""
+document.getElementById("kml-link").setAttribute("style", "padding:5px;background-color:black;color:white;border:1px solid MediumSeaGreen")
+}
+if (streamStatus === true && ((takserverStatus === true && rawTakserverCertError === false) || (multicastStatus === true || udpStatus === true))) {
+document.getElementById("stream-legend").setAttribute("style", "border:1px solid MediumSeaGreen")
+document.getElementById("stream-config").innerHTML = "";
+} else if (streamStatus === true) {
+document.getElementById("stream-legend").setAttribute("style", "border:1px solid red")
+document.getElementById("stream-config").innerHTML = "*MUST enable Multicast or TAKServer Config to work*"
+} else {
+document.getElementById("stream-legend").setAttribute("style", "border:1px solid white")
 }
 };
 
@@ -836,8 +948,30 @@ document.getElementById("guideIcon").setAttribute("class", "fa fa-chevron-circle
 };
 };
 
+function kmlDrop() {document.getElementById("kmlDrop").classList.toggle("show");
+if (document.getElementById("kmlIcon").getAttribute("class") == "fa fa-chevron-circle-right") {
+document.getElementById("kmlIcon").setAttribute("class", "fa fa-chevron-circle-down");
+} else {
+document.getElementById("kmlIcon").setAttribute("class", "fa fa-chevron-circle-right");
+};
+};
+
+function streamDrop() {document.getElementById("streamDrop").classList.toggle("show");
+if (document.getElementById("streamIcon").getAttribute("class") == "fa fa-chevron-circle-right") {
+document.getElementById("streamIcon").setAttribute("class", "fa fa-chevron-circle-down");
+} else {
+document.getElementById("streamIcon").setAttribute("class", "fa fa-chevron-circle-right");
+};
+};
+
 function updateInterfaceHtml(value) {
 multicastNic.innerHTML += "<option value=" + value.ip[0] + " id=" + value.interface + ">" + value.ip[0] + " (" + value.interface + ")</option>";
+};
+
+function updateKismetFilesHtml(value) {
+if (value !== "" || value !== " ") {
+kmlFiles.innerHTML += "<option value=" + value + " id=" + value + ">" + value + "</option>";
+}
 };
 
 function updateTargetHtml(value) {
@@ -907,6 +1041,15 @@ targetCot.checked = rawTargetCotService;
 targetCotType.value = rawTargetCotType;
 targetCotColor.value = rawTargetCotColor;
 };
+if (rawKmlFilepath !== "") {
+kmlFiles.value = rawKmlFile;
+kmlFilepath.value = rawKmlFilepath;
+};
+if (rawStreamService === true || (rawStreamCotType !== "" && rawStreamCotColor !== "")) {
+streamEnable.checked = rawStreamService;
+streamCotType.value = rawStreamCotType;
+streamCotColor.value = rawStreamCotColor;
+};
 };
 
 //forward user input to backend
@@ -931,7 +1074,7 @@ console.error('Error sending data:', error);
 };
 
 function parametersInitialize(inputUser, inputPassword) {
-const obj = {id: "initialize", user: inputUser, password: inputPassword};
+const obj = {id: "initialize", user: inputUser, password: inputPassword, ip: currentHostname};
 forwardJson(obj)
 };
 
@@ -972,6 +1115,17 @@ forwardJson(obj)
 
 function parametersTargetChat(format, status) {
 const obj = {id: "target-chat", type: format, service: status};
+forwardJson(obj)
+};
+
+function parametersKml(kml, status, filepath) {
+const obj = {id: "kismet-file", file: kml, service: true, directory: filepath};
+console.log(obj)
+forwardJson(obj)
+};
+
+function parametersStream(type, color, status) {
+const obj = {id: "stream-cot", cot: type, rgb: color, service: status};
 forwardJson(obj)
 };
 
@@ -1046,6 +1200,14 @@ rawTargetChatFormat = data.targetChat[1];
 rawTargetCotService = data.targetCot[0];
 rawTargetCotType = data.targetCot[1];
 rawTargetCotColor = data.targetCot[2];
+rawKismetFiles = data.kismetFiles[0];
+rawKmlService = true;
+rawKmlFile = data.kismetFiles[2];
+rawKmlFilepath = data.kismetFiles[3];
+rawKmlError = data.kismetFiles[4];
+rawStreamService = data.stream[0];
+rawStreamCotType = data.stream[1];
+rawStreamCotColor = data.stream[2];
 if (rawTargetList.includes("")){
 rawTargetList.splice(rawTargetList.indexOf(""),1);
 };
@@ -1055,6 +1217,8 @@ rawTargetList.splice(rawTargetList.indexOf(" "),1);
 //receiveInterfacesJson();
 multicastNic.innerHTML = ""; //clear out html interfaces so there arent repeats when they get added
 localInterfaces.forEach(updateInterfaceHtml); //display available nic interfaces for user to select
+kmlFiles.innerHTML = "";
+rawKismetFiles.forEach(updateKismetFilesHtml);
 persistData(); //global variables equal raw variables
 checkInitialize(); //check user/pass grabbed from kismet_httpd.conf
 matchValues(); //match global service/status booleans to raw
@@ -1342,6 +1506,35 @@ targetCotColor.disabled = true;
 }
 };
 
+kmlFilepath.onchange = function() {
+kmlCheck.disabled === false;
+};
+
+streamCotType.onchange = function() {
+if (streamCotType.value === "b-m-p-s-m" || streamCotType.value === "pushpin") {
+streamCotColor.disabled = false;
+} else {
+streamCotColor.disabled = true;
+}
+};
+
+streamEnable.onclick = function () {
+if (streamEnable.checked === true) {
+streamSubmit.disabled = false;
+streamCotType.disabled = false;
+if (streamCotType.value === "b-m-p-s-m" || streamCotType.value === "pushpin") {
+streamCotColor.disabled = false;
+}} else {
+streamStatus = false;
+streamCotType.disabled = true;
+streamCotColor.disabled = true;
+streamSubmit.disabled = true;
+parametersStream("","",false);
+document.getElementById("stream-legend").setAttribute("style", "border:1px solid white")
+}
+checkActive();
+};
+
 targetAddButton.onclick = function() {
 //console.log("targetAdd.value " + targetAdd.value)
 if (targetAdd.value !== "" || targetAdd.value.length > 1) {
@@ -1454,6 +1647,31 @@ parametersTargetCot(targetCotType.value, targetCotColor.value, targetCot.checked
 parametersTargetChat(targetChatFormat.value, targetChat.checked)
 };
 
+kmlFiles.onchange = function() {
+document.getElementById("kml-legend").setAttribute("style", "border:1px solid MediumSeaGreen")
+document.getElementById("kml-link").setAttribute("style", "padding:5px;background-color:black;color:white;border:1px solid MediumSeaGreen")
+parametersKml(kmlFiles.value, true, kmlFilepath.value);
+//receivePersistJson();
+setTimeout(receivePersistJson, 1000);
+};
+
+document.getElementById("kismet-check").onclick = function() {
+parametersKml("", true, kmlFilepath.value);
+receivePersistJson();
+}
+
+streamSubmit.onclick = function() {
+if ((takserverStatus === true && rawTakserverCertError === false) || (multicastStatus === true || udpStatus === true)) {
+document.getElementById("stream-legend").setAttribute("style", "border:1px solid MediumSeaGreen")
+document.getElementById("stream-config").innerHTML = "";
+} else {
+document.getElementById("stream-legend").setAttribute("style", "border:1px solid red")
+document.getElementById("stream-config").innerHTML = "*MUST enable Multicast or TAKServer Config to work*"
+}
+streamStatus = true;
+parametersStream(streamCotType.value, streamCotColor.value, streamEnable.checked);
+};
+
 document.getElementById('file-target').addEventListener('change', function(event) {
 //end of new function test
 const file = event.target.files[0];
@@ -1474,6 +1692,7 @@ receiveInterfacesJson();
 //localInterfaces.forEach(updateInterfaceHtml);
 receivePersistJson();
 takserverPassword.innerHTML = "";
+parametersInitialize("", "");
 //persistData();
 //matchValues();
 //checkActive();
