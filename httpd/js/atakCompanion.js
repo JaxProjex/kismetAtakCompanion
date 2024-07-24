@@ -341,11 +341,11 @@ button {
 <div id="streamDrop" class="dropdown-container">
 <span style="padding:10px"><label for="stream-enable">Enable:</label><label class="enableSwitch"><input id="stream-enable" type="checkbox"><span class="slider"></span></label></span>
 <br><br><span style="padding:10px"><label for="stream-cot-type">CoT Type:</label><select name="stream-cot-type" id="stream-cot-type" disabled="true">
-<option value="a-f-G">Friendly</option><option value="pushpin">Pushpin</option><option value="b-m-p-s-m">Spot</option>
+<option value="a-f-G">Friendly</option><option value="pushpin" selected>Pushpin</option><option value="b-m-p-s-m">Spot</option>
 <option value="a-n-G">Neutral</option></select></span>
 <br><br><span style="padding:10px"><label for="stream-cot-color">CoT Color:</label><select name="stream-cot-color" id="stream-cot-color" disabled="true">
-<option value="-16711936">Green</option><option value="-16711681" selected>Cyan</option><option value="-65536">Red</option><option value="-16776961">Blue</option>
-<option value="-256">Yellow</option><option value="-65281">Purple</option></select></span>
+<option value="-16711936">Green</option><option value="-16711681">Cyan</option><option value="-65536">Red</option><option value="-16776961">Blue</option>
+<option value="-256" selected>Yellow</option><option value="-65281">Purple</option></select></span>
 <br><br><span style="padding:10px"><button class="submitButton disabled" id="stream-submit" type="button" disabled=true><b>Submit</b></button><span id="stream-status"></span></span>
 <br><br><span id="stream-config" style="color:red;background-color:black">*MUST enable Multicast or TAKServer Config to work*</span>
 </div>
