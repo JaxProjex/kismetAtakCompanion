@@ -1330,6 +1330,11 @@ def create_kml(arr):
         for device in arr:
             location = "0.0,0.0"
             name = device.get('name')
+            name = (name.replace("&", "&amp;")
+                        .replace("<","&lt;")
+                        .replace(">","&gt;")
+                        .replace('"','&quot;')
+                        .replace("'","&apos;"))
             if device.get('location') and len(device.get('location')) == 2:
                 lat = str(device['location'][1])
                 lon = str(device['location'][0])
