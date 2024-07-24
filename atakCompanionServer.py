@@ -1126,11 +1126,11 @@ def handle_monitor(name, mac, lat, lon): #ws monitor device/target matched
         for target in target_list:
             if target in mac:
                 print("target match of device_mac from handle_monitor...")
-                remark = "Found: " + mac
+                remark = "#kismet " + "#kismetTgt " + "Found: " + mac
                 trigger_target_geo(remark, target, lat, lon)
             if target in name:
                 print("target match of device_name from handle_monitor...")
-                remark = "Found: " + name
+                remark = "#kismet " + "#kismetTgt " + "Found: " + name
                 trigger_target_geo(remark, target, lat, lon)
     elif stream_cot_service == True:
         trigger_stream_geo("#kismet", name, lat, lon)
