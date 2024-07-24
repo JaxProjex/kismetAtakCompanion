@@ -1301,13 +1301,13 @@ def create_kml_network_link(link):
         file.write('  <Document>\n')
         file.write('    <name>KML</name>\n')
         file.write('    <description>KML Network Link</description>\n')
-        file.write('    <NetworkLink\n')
-        file.write('        <name>Dynamic Data</name>\n')
-        file.write('        <description>External Source</description>\n')
+        file.write('    <NetworkLink>\n')
+        file.write('        <name>Kismet Device Feed</name>\n')
+        file.write('        <description>current active devices scanned by kismet</description>\n')
         file.write('        <Link>\n')
         file.write(f'          <href>{link}</href>\n')
         file.write('          <refreshMode>onInterval</refreshMode>\n')
-        file.write('          <refreshInterval>3600</refreshInterval>\n')
+        file.write('          <refreshInterval>60</refreshInterval>\n')
         file.write('        </Link>\n')
         file.write('    </NetworkLink>\n')
         file.write('  </Document>\n')
@@ -1328,13 +1328,13 @@ def create_kml(arr):
         file.write('<kml xmlns="http://www.opengis.net/kml/2.2">\n')
         file.write('  <Document>\n')
         for device in arr:
-            location = "0,0"
+            location = "0.0,0.0"
             name = device.get('name')
             if device.get('location') and len(device.get('location')) == 2:
                 lat = str(device['location'][1])
                 lon = str(device['location'][0])
                 location = lon+","+lat
-            if location != "0,0":
+            if location != "0.0,0.0":
                 file.write('    <Placemark>\n')
                 file.write(f'      <name>{name}</name>\n')
                 file.write('      <Point>\n')
