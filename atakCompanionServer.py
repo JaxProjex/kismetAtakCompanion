@@ -883,16 +883,16 @@ def handle_device(data): #tak-fwd cot, hard coded hostile marker
     #    marker = "caution"
     if (multicast_service):
         print("send tak-fwd cot over multicast")
-        cot = cot_template('cot', 'a-h-G', 'red', device, device, "", device, device_lat, device_lon)
+        cot = cot_template('cot', 'a-h-G', 'red', device, device+"-device", "#kismet", device, device_lat, device_lon)
         cot_send_multicast(cot, multicast_address, multicast_port, multicast_interface)
     if (udp_service):
         for clients in udp_list:
             print("send tak-fwd cot over udp")
-            cot = cot_template('cot', 'a-h-G', 'red', device, device, "", device, device_lat, device_lon)
+            cot = cot_template('cot', 'a-h-G', 'red', device, device+"-device", "#kismet", device, device_lat, device_lon)
             cot_send_multicast(cot, clients, 4242, multicast_interface)
     if (takserver_service):
         print("send tak-fwd cot over takserver")
-        cot = cot_template('cot', 'a-h-G', 'red', device, device, "", device, device_lat, device_lon)
+        cot = cot_template('cot', 'a-h-G', 'red', device, device+"-device", "#kismet", device, device_lat, device_lon)
         cot_send_takserver(cot)
 
 def handle_default(data):
