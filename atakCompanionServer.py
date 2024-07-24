@@ -689,6 +689,7 @@ def handle_multicast(data): #multicast config
     elif data.get('service') == False:
         multicast_service = False
     if data.get('multicast') == True:
+        multicast_interface = data.get('net')
         udp_service = True
         udp_temp = data.get('clients')
         udp_list = list(filter(None, udp_temp))
