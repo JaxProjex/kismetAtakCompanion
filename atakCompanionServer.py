@@ -1160,16 +1160,16 @@ def trigger_target(remarks, target): #used by kismet alerts and tak tracker
                 marker = "caution"
             if (multicast_service):
                 print("send notification cot over multicast")
-                cot = cot_template(marker, notification_cot_type, notification_cot_color, target, target, remarks, target, current_lat, current_lon)
+                cot = cot_template(marker, notification_cot_type, notification_cot_color, target, target+"-alert", remarks, target, current_lat, current_lon)
                 cot_send_multicast(cot, multicast_address, multicast_port, multicast_interface)
             if (udp_service):
                 for clients in udp_list:
                     print("send notification cot over udp")
-                    cot = cot_template(marker, notification_cot_type, notification_cot_color, target, target, remarks, target, current_lat, current_lon)
+                    cot = cot_template(marker, notification_cot_type, notification_cot_color, target, target+"-alert", remarks, target, current_lat, current_lon)
                     cot_send_multicast(cot, clients, 4242, multicast_interface)
             if (takserver_service):
                 print("send notification cot over takserver")
-                cot = cot_template(marker, notification_cot_type, notification_cot_color, target, target, remarks, target, current_lat, current_lon)
+                cot = cot_template(marker, notification_cot_type, notification_cot_color, target, target+"-alert", remarks, target, current_lat, current_lon)
                 cot_send_takserver(cot)
     if (notification_chat_service):
         print("send notification chat")
@@ -1459,7 +1459,7 @@ async def subscribe_to_ws():
 async def main_ws():
     while True: #while loop to attempt to reconnect to ws if disconnected
         await asyncio.gather(
-            #subscribe_to_ws(),
+            subscribe_to_ws(),
             subscribe_to_ws_monitor(),
             update_date(),
         )
