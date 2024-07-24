@@ -1103,7 +1103,7 @@ def handle_alert(data): #ws eventbus alerts
         name = "Alert: Low"
     elif (alert_severity == 0):
         name = "Alert: Info"
-    alert_remark = alert_header + ", " + str(alert_class) + ", " + str(name) + ", " + str(alert_text) + ", Destination MAC: " + str(alert_dest) + ", Source MAC: " + str(alert_src) + ", Transmitter MAC: " + str(alert_tx)
+    alert_remark = "#kismet " + "#kismetAlert " + alert_header + ", " + str(alert_class) + ", " + str(name) + ", " + str(alert_text) + ", Destination MAC: " + str(alert_dest) + ", Source MAC: " + str(alert_src) + ", Transmitter MAC: " + str(alert_tx)
     #alert_remark = name + ", " + alert_text
     trigger_target(alert_remark, alert_src)
 
