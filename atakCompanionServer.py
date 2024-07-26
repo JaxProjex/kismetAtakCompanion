@@ -587,8 +587,9 @@ def cot_send_takserver(cot): #send cot over takserver
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-            context.load_cert_chain(certfile=takserver_user, keyfile=takserver_key_dec, password=takserver_password)
+            context.load_cert_chain(certfile=takserver_user, keyfile=takserver_key, password=takserver_password)
             context.load_verify_locations(cafile=takserver_ca)
+            context.check_hostname = False
             with context.wrap_socket(sock, server_side=False, server_hostname=takserver_address) as ssock:
                 ssock.connect((takserver_address, 8089)) #port 8089 https
                 ssock.sendall(cot)
@@ -619,8 +620,9 @@ def test_send_takserver(): #send test over takserver
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-            context.load_cert_chain(certfile=takserver_user, keyfile=takserver_key_dec, password=takserver_password)
+            context.load_cert_chain(certfile=takserver_user, keyfile=takserver_key, password=takserver_password)
             context.load_verify_locations(cafile=takserver_ca)
+            context.check_hostname = False
             with context.wrap_socket(sock, server_side=False, server_hostname=takserver_address) as ssock:
                 ssock.connect((takserver_address, 8089)) #port 8089 https
                 #ssock.sendall("test")
