@@ -243,7 +243,7 @@ button {
 <option value="default" selected>239.2.3.1:6969 (Default)</option><option value="sensor">239.5.5.55:7171 (Sensor)</option></select></span>
 <br><br><span style="padding:10px"><label for="udp-enable">Send To:</label><label class="enableSwitch"><input id="udp-enable" type="checkbox"><span class="slider"></span></label></span>
 <br><br><span style="padding:10px"><label for="udp-add">Add Client:</label><input id="udp-add" type="text" placeholder="192.168.1.96" disabled="true">
-<button type="button" id="udp-add-button" disabled="true">Add</button> *case sensitive</span>
+<button type="button" id="udp-add-button" disabled="true">Add</button></span>
 <br><br><span style="padding:10px"><label for="udp-list">Select:</label><select name="udp-list" id="udp-list" disabled="true"></select>
 <button type="button" id="udp-delete-button" disabled="true">Remove</button>
 <button type="button" id="udp-clear-button" disabled="true">Clear All</button></span>
