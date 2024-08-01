@@ -92,4 +92,4 @@ $ make uninstall
 ---
 
 ## License:
-MIT
+[MIT](https://github.com/JaxProjex/kismetAtakCompanion/blob/main/LICENSE)
