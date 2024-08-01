@@ -1,82 +1,95 @@
-# kismetAtakCompanion
-Kismet Plugin that forwards Alerts and detection of targeted MAC Addresses and SSIDs to TAK Devices as GeoChat messages and CoT markers on TAK Map using Multicast or TAKServer.
+# Kismet ATAK Companion Plugin
 
-Works only for "Release" version of kismet, NOT the "git" version. this is because scanned device datatables are different between git and release version. 
+**Kismet Plugin to extend the Web UI and enable configuration to send Kismet device data to ATAK. Works only for "Release" version of kismet, NOT the "git" version. Configuring Kismet with GPS is Required.**
 
-Install ATAK Companion Plugin:
+---
 
--go to your users home directory:
+## Features:
 
+>* Stream all scanned devices by Kismet to ATAK Map as CoT via TAKServer or Multicast
+
+>* Connect to Network KML of active kismet log and display scanned devices 
+>  * can be imported into ATAK as Network Link, updates automatically every 60s
+
+>* Easily import past .Kismet files as KMLs 
+>  * .Kismet files with empty devices or devices without GPS coordinates will fail to be converted to KML)
+
+>* Forward all Kismet Alerts as CoT markers and/or GeoChat messages to ATAK via TAKServer or Multicast
+
+>* Forward all inputted Kismet Targets as CoT markers and/or GeoChat messages via TAKServer or Multicast 
+>  * Targets can be manually entered, imported as .txt file separated by commas or added from the Kismet Device Table via TGT+ button
+
+>* Run Kismet as a TAK Tracker 
+>  * Tracker service stops when Kismet service stops running
+
+>* Plot any scanned device in Kismet Device Tables to ATAK using TAK-FWD button (valid GPS coordinates attached to device required)
+
+---
+
+## Getting Started:
+### Install
+```bash
+# go to user directory
 $ cd ~
 
--clone the ATAK Companion Plugin repo
-
+# clone kismetAtakCompanion Repo
 $ git clone https://github.com/JaxProjex/kismetAtakCompanion.git
 
--change directories into the repo
-
+# change into working directory
 $ cd kismetAtakCompanion
 
--run make to add files to necessary place, enable/start services for plugin to work
-
+# run make install
 $ make install
 
--run kismet (not as root)
-
+# run kismet in your preferred user directory
+$ cd /home/pi/junk
 $ kismet
-
-- go to kismets webserver at localhost:2501
-
-- at the bottom next to "Messages" and "Channels" should be the Atak Companion Tab
-
-Uninstall ATAK Companion Plugin:
-
-$ cd ~/kismetAtakCompanion
-
+```
+### Uninstall
+```bash
+# to uninstall kismetAtakCompanion
+$ cd kismetAtakCompanion
 $ make uninstall
+```
+
+---
+
+# Usage:
+
+![kismetAtakCompanionPhoto](/photos/img1.png?raw=true "img6")
+
+![kismetAtakCompanionPhoto](/photos/img2.png?raw=true "img5")
+
+![kismetAtakCompanionPhoto](/photos/img3.png?raw=true "img4")
+
+![kismetAtakCompanionPhoto](/photos/img4.png?raw=true "img7")
+
+![kismetAtakCompanionPhoto](/photos/img5.png?raw=true "img8")
+
+![kismetAtakCompanionPhoto](/photos/img6.png?raw=true "img9")
+
+![kismetAtakCompanionPhoto](/photos/img7.png?raw=true "img10")
+
+![kismetAtakCompanionPhoto](/photos/img8.png?raw=true "img1")
+
+![kismetAtakCompanionPhoto](/photos/img9.png?raw=true "img2")
+
+![kismetAtakCompanionPhoto](/photos/img10.png?raw=true "img3")
+
+---
+
+## To-Do:
+
+* Bluetooth option
+* Device DF feature
+* device whitelist or device baseline feature
+* other takserver auth options
+* requests?
+* bug fixes?
+* ui adjustments?
 
 
-USB Tethering Setup:
+---
 
-$ sudo nano /etc/network/interfaces
-
--add in:
-
-allow-hotplug usb0
-
-iface usb0 inet dhcp
-
--on android phone: settings > connections > mobile hotspot and tethering > usb tethering
-
-
-Ethernet Setup:
-
-$ sudo nano /etc/network/interfaces
-
--add in:
-
-allow-hotplug eth0
-
-iface eth0 inet static
-
-address 192.168.1.100
-
-netmask 255.255.255.0
-
-gateway 192.168.1.1
-
-dns-nameservers 8.8.8.8
-
--on android phone: settings > connections > more connections > ethernet > static
-
--ip 192.168.1.99
-
--netmask 255.255.255.0
-
--gateway 192.168.1.1
-
--dns 8.8.8.8
-
--ethernet connect toggle
-
--if ethernet connect doesn't stay connected try unplugging/replugging usbc to ethernet dongle to phone
+## License:
+MIT
