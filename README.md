@@ -6,23 +6,23 @@
 
 ## Features:
 
->* Stream all scanned devices by Kismet to ATAK Map as CoT via TAKServer or Multicast
+* Stream all scanned devices by Kismet to ATAK Map as CoT via TAKServer or Multicast
 
->* Connect to Network KML of active kismet log and display scanned devices 
->  * can be imported into ATAK as Network Link, updates automatically every 60s
+* Connect to Network KML of active kismet log and display scanned devices 
+  * can be imported into ATAK as Network Link, updates automatically every 60s
 
->* Easily import past .Kismet files as KMLs 
->  * .Kismet files with empty devices or devices without GPS coordinates will fail to be converted to KML)
+* Easily import past .Kismet files as KMLs 
+  * .Kismet files with empty devices or devices without GPS coordinates will fail to be converted to KML)
 
->* Forward all Kismet Alerts as CoT markers and/or GeoChat messages to ATAK via TAKServer or Multicast
+* Forward all Kismet Alerts as CoT markers and/or GeoChat messages to ATAK via TAKServer or Multicast
 
->* Forward all inputted Kismet Targets as CoT markers and/or GeoChat messages via TAKServer or Multicast 
->  * Targets can be manually entered, imported as .txt file separated by commas or added from the Kismet Device Table via TGT+ button
+* Forward all inputted Kismet Targets as CoT markers and/or GeoChat messages via TAKServer or Multicast 
+  * Targets can be manually entered, imported as .txt file separated by commas or added from the Kismet Device Table via TGT+ button
 
->* Run Kismet as a TAK Tracker 
->  * Tracker service stops when Kismet service stops running
+* Run Kismet as a TAK Tracker 
+  * Tracker service stops when Kismet service stops running
 
->* Plot any scanned device in Kismet Device Tables to ATAK using TAK-FWD button (valid GPS coordinates attached to device required)
+* Plot any scanned device in Kismet Device Tables to ATAK using TAK-FWD button (valid GPS coordinates attached to device required)
 
 ---
 
@@ -54,7 +54,7 @@ $ make uninstall
 
 ---
 
-# Usage:
+## Usage:
 
 ![kismetAtakCompanionPhoto](/photos/img6.png?raw=true "img6")
 
