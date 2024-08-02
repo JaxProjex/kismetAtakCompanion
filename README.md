@@ -56,25 +56,25 @@ $ make uninstall
 
 ## Usage:
 
-![kismetAtakCompanionPhoto](/photos/img6.png?raw=true "img6")
+![kismetAtakCompanionPhoto](/photos/img6.png?raw=true)
 
-![kismetAtakCompanionPhoto](/photos/img5.png?raw=true "img5")
+![kismetAtakCompanionPhoto](/photos/img5.png?raw=true)
 
-![kismetAtakCompanionPhoto](/photos/img4.png?raw=true "img4")
+![kismetAtakCompanionPhoto](/photos/img4.png?raw=true)
 
-![kismetAtakCompanionPhoto](/photos/img7.png?raw=true "img7")
+![kismetAtakCompanionPhoto](/photos/img7.png?raw=true)
 
-![kismetAtakCompanionPhoto](/photos/img8.png?raw=true "img8")
+![kismetAtakCompanionPhoto](/photos/img8.png?raw=true)
 
-![kismetAtakCompanionPhoto](/photos/img9.png?raw=true "img9")
+![kismetAtakCompanionPhoto](/photos/img9.png?raw=true)
 
-![kismetAtakCompanionPhoto](/photos/img10.png?raw=true "img10")
+![kismetAtakCompanionPhoto](/photos/img10.png?raw=true)
 
-![kismetAtakCompanionPhoto](/photos/img1.png?raw=true "img1")
+![kismetAtakCompanionPhoto](/photos/img1.png?raw=true)
 
-![kismetAtakCompanionPhoto](/photos/img2.png?raw=true "img2")
+![kismetAtakCompanionPhoto](/photos/img2.png?raw=true)
 
-![kismetAtakCompanionPhoto](/photos/img3.png?raw=true "img3")
+![kismetAtakCompanionPhoto](/photos/img3.png?raw=true)
 
 ---
 
