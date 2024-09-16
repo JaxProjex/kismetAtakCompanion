@@ -38,7 +38,7 @@ select {
   border-radius: 2px;
   border: 1px solid #ccc;
   padding: 10px;
-  width: 200px;
+  width: 160px;
   cursor: pointer;
 }
 
@@ -212,7 +212,7 @@ button {
 
 <div style="border:1px solid white" id="all-fields">
 
-<div style="padding:2px">
+<div style="padding:1px">
 <fieldset>
 <legend onclick="initializeDrop()" id="initialize-legend" class="dropdown-btn" style="border 1px solid red">Initialize: <i id="initializeIcon" class="fa fa-chevron-circle-right"></i></legend>
 <div id="initializeDrop" class="dropdown-container">
@@ -225,7 +225,7 @@ button {
 </fieldset>
 </div>
 
-<div style="padding:2px">
+<div style="padding:1px">
 <fieldset>
 <legend onclick="takserverDrop()" id="takserver-legend" class="dropdown-btn">TAKServer Config: <i id="takserverIcon" class="fa fa-chevron-circle-right"></i></legend>
 <div id="takserverDrop" class="dropdown-container">
@@ -244,7 +244,7 @@ button {
 </fieldset>
 </div>
 
-<div style="padding:2px">
+<div style="padding:1px">
 <fieldset>
 <legend onclick="multicastDrop()" id="multicast-legend" class="dropdown-btn">Multicast Config: <i id="multicastIcon" class="fa fa-chevron-circle-right"></i></legend>
 <div id="multicastDrop" class="dropdown-container">
@@ -264,7 +264,7 @@ button {
 </fieldset>
 </div>
 
-<div style="padding:2px">
+<div style="padding:1px">
 <fieldset>
 <legend onclick="alertsDrop()" id="alert-legend" class="dropdown-btn">Kismet Alerts Config: <i id="alertsIcon" class="fa fa-chevron-circle-right"></i></legend>
 <div id="alertsDrop" class="dropdown-container">
@@ -284,7 +284,7 @@ button {
 </fieldset>
 </div>
 
-<div style="padding:2px">
+<div style="padding:1px">
 <fieldset>
 <legend onclick="targetDrop()" id="target-legend" class="dropdown-btn">Kismet Targets Config: <i id="targetIcon" class="fa fa-chevron-circle-right"></i></legend>
 <div id="targetDrop" class="dropdown-container">
@@ -311,7 +311,7 @@ button {
 </fieldset>
 </div>
 
-<div style="padding:2px">
+<div style="padding:1px">
 <fieldset>
 <legend onclick="trackerDrop()" id="tracker-legend" class="dropdown-btn">TAK Tracker Config: <i id="trackerIcon" class="fa fa-chevron-circle-right"></i></legend>
 <div id="trackerDrop" class="dropdown-container">
@@ -330,7 +330,7 @@ button {
 </fieldset>
 </div>
 
-<div style="padding:2px">
+<div style="padding:1px">
 <fieldset>
 <legend onclick="kmlDrop()" id="kml-legend" class="dropdown-btn">Kismet KML Config: <i id="kmlIcon" class="fa fa-chevron-circle-right"></i></legend>
 <div id="kmlDrop" class="dropdown-container">
@@ -345,7 +345,7 @@ button {
 </div>
 
 
-<div style="padding:2px">
+<div style="padding:1px">
 <fieldset>
 <legend onclick="streamDrop()" id="stream-legend" class="dropdown-btn">Kismet Stream Config: <i id="streamIcon" class="fa fa-chevron-circle-right"></i></legend>
 <div id="streamDrop" class="dropdown-container">
@@ -362,7 +362,7 @@ button {
 </fieldset>
 </div>
 
-<div style="padding:2px">
+<div style="padding:1px">
 <fieldset>
 <legend style="border:2px solid black;background-color:white;color:black" onclick="guideDrop()" id="guide-legend" class="dropdown-btn">User Guide: <i id="guideIcon" class="fa fa-chevron-circle-right"></i></legend>
 <div id="guideDrop" class="dropdown-container">
