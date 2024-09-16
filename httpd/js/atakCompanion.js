@@ -12,9 +12,15 @@ kismet_ui_tabpane.AddTab({
     createCallback: function(div) {
         $(document).ready(function () {
 	$(div).append(`
-<div>
+<div id='atakCompanionContainer'>
 
 <style>
+
+#atakCompanionContainer {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+}
 
 :disabled {
   opacity: 0.5;
