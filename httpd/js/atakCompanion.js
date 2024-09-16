@@ -16,6 +16,10 @@ kismet_ui_tabpane.AddTab({
 
 <style>
 
+#panel {
+overflow: auto;
+}
+
 #atakCompanionContainer {
   height: 100%;
   width: 100%;
